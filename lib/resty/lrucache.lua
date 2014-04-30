@@ -29,10 +29,10 @@ local NULL = ffi.null
 -- queue utility functions
 
 local function queue_insert_tail(h, x)
-   x.prev = h.prev
+   x.prev = h[0].prev
    x.prev.next = x
    x.next = h
-   h.prev = x
+   h[0].prev = x
 end
 
 
@@ -42,22 +42,21 @@ local function queue_init(size)
    end
    local q = ffi_new(queue_arr_type, size + 1)
    ffi.fill(q, ffi_sizeof(queue_type, size + 1), 0)
-   local ptr = ffi_cast(queue_ptr_type, q)
 
-   q[0].prev = ptr
-   q[0].next = ptr
+   q[0].prev = q
+   q[0].next = q
 
    for i = 1, size do
-      queue_insert_tail(ptr, q[i])
+      queue_insert_tail(q, q[i])
    end
 
-   return ptr
+   return q
 end
 
 
 local function queue_is_empty(q)
    -- print("q: ", tostring(q), "q.prev: ", tostring(q), ": ", q == q.prev)
-   return q == q.prev
+   return q == q[0].prev
 end
 
 
@@ -70,20 +69,20 @@ end
 
 
 local function queue_insert_head(h, x)
-   x.next = h.next
+   x.next = h[0].next
    x.next.prev = x
    x.prev = h
-   h.next = x
+   h[0].next = x
 end
 
 
 local function queue_last(h)
-   return h.prev
+   return h[0].prev
 end
 
 
 local function queue_head(h)
-   return h.next
+   return h[0].next
 end
 
 

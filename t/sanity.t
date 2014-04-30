@@ -35,6 +35,8 @@ __DATA__
             local lrucache = require "resty.lrucache"
             local c = lrucache.new(2)
 
+            collectgarbage()
+
             c:set("dog", 32)
             c:set("cat", 56)
             ngx.say("dog: ", c:get("dog"))
