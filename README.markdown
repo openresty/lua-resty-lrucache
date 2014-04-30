@@ -159,7 +159,7 @@ and then load the library in Lua:
 TODO
 ====
 
-* We should simplify the current implementation when LuaJIT 2.1 gets support for `__gc` metamethod on normal Lua tables. Right now we are using an FFI cdata and a ref/unref memo table to work around this, which is rather ugly and a bit inefficient.
+* add new method `get_stale` for fetching already expired items.
 
 [Back to TOC](#table-of-contents)
 
