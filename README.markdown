@@ -34,7 +34,28 @@ This library is still under early development.
 Synopsis
 ========
 
-```lua
+```nginx
+    lua_package_path "/path/to/lua-resty-lrucache/lib/?.lua;;";
+
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+
+            local c = lrucache.new(2)
+            if not c then
+                ngx.say("failed to create the cache: ", err)
+                return
+            end
+
+            c:set("dog", 32)
+            c:set("cat", 56)
+            ngx.say("dog: ", c:get("dog"))
+            ngx.say("cat: ", c:get("cat"))
+
+            c:set("dog", { age = 10 }, 0.1)  -- expire in 0.1 sec
+            c:delete("dog")
+        ';
+    }
 ```
 
 Description
@@ -76,7 +97,7 @@ set
 
 Sets a key with a value and an expiration time.
 
-The `ttl` argument specifies the expiration time period. The time value is in seconds, but you can also specify the fraction number part, like `0.25`.
+The `ttl` argument specifies the expiration time period. The time value is in seconds, but you can also specify the fraction number part, like `0.25`. A nil `ttl` argument value means never expired (which is the default).
 
 When the cache is full, the cache will automatically evict the least recently used item.
 
@@ -109,12 +130,13 @@ Prerequisites
 Installation
 ============
 
-It is recommended to use the latest [ngx_openresty bundle](http://openresty.org) directly where this library
-is bundled and enabled by default. At least ngx_openresty 1.4.2.9 is required. And you need to enable LuaJIT when building your ngx_openresty
+It is recommended to use the latest [ngx_openresty bundle](http://openresty.org) directly. At least ngx_openresty 1.4.2.9 is required. And you need to enable LuaJIT when building your ngx_openresty
 bundle by passing the `--with-luajit` option to its `./configure` script. No extra Nginx configuration is required.
 
 If you want to use this library with your own Nginx build (with ngx_lua), then you need to
-ensure you are using at least ngx_lua 0.8.10. Also, You need to configure
+ensure you are using at least ngx_lua 0.8.10.
+
+Also, You need to configure
 the [lua_package_path](https://github.com/chaoslawful/lua-nginx-module#lua_package_path) directive to
 add the path of your lua-resty-lrucache source tree to ngx_lua's Lua module search path, as in
 
