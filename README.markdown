@@ -41,7 +41,7 @@ Synopsis
         content_by_lua '
             local lrucache = require "resty.lrucache"
 
-            local c = lrucache.new(2)
+            local c = lrucache.new(200)  -- allow up to 200 items in the cache
             if not c then
                 ngx.say("failed to create the cache: ", err)
                 return
