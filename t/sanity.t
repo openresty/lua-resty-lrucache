@@ -13,7 +13,7 @@ plan tests => repeat_each() * (blocks() * 3);
 my $pwd = cwd();
 
 our $HttpConfig = <<"_EOC_";
-    lua_package_path "$pwd/lib/?.lua;;";
+    lua_package_path "$pwd/lib/?.lua;$pwd/../lua-resty-core/lib/?.lua;;";
     #init_by_lua '
     #local v = require "jit.v"
     #v.on("$Test::Nginx::Util::ErrLogFile")
