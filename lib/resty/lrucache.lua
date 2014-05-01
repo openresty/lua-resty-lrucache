@@ -90,10 +90,11 @@ end
 
 local _M = {}
 local mt = { __index = _M }
+local uintptr_t = ffi.typeof("uintptr_t")
 
 
 local function ptr2num(ptr)
-   return tonumber(ffi_cast("uintptr_t", ptr))
+   return tonumber(ffi_cast(uintptr_t, ptr))
 end
 
 
