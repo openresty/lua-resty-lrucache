@@ -6,6 +6,9 @@ local ffi_new = ffi.new
 local ffi_sizeof = ffi.sizeof
 local ffi_cast = ffi.cast
 local ngx_now = ngx.now
+local uintptr_t = ffi.typeof("uintptr_t")
+local setmetatable = setmetatable
+local tonumber = tonumber
 
 
 -- queue data types
@@ -90,7 +93,6 @@ end
 
 local _M = {}
 local mt = { __index = _M }
-local uintptr_t = ffi.typeof("uintptr_t")
 
 
 local function ptr2num(ptr)
@@ -168,7 +170,7 @@ function _M.set(self, key, value, ttl)
 
       if queue_is_empty(free_queue) then
          -- evict the least recently used key
-         assert(not queue_is_empty(self.cache_queue))
+         -- assert(not queue_is_empty(self.cache_queue))
          node = queue_last(self.cache_queue)
 
          local oldkey = node2key[ptr2num(node)]
