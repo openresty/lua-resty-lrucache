@@ -12,6 +12,11 @@ local tonumber = tonumber
 
 
 -- queue data types
+--
+-- this queue type chains nodes circularly and the first node
+-- is reserved for the queue itself.
+-- the implementation is mostly borrowed from nginx's ngx_queue_t data
+-- structure.
 
 ffi.cdef[[
     typedef struct lrucache_queue_s  lrucache_queue_t;
@@ -32,10 +37,11 @@ local NULL = ffi.null
 -- queue utility functions
 
 local function queue_insert_tail(h, x)
-    x.prev = h[0].prev
+    local last = h[0].prev
+    x.prev = last
     x.prev.next = x
     x.next = h
-    h[0].prev = x
+    last = x
 end
 
 
@@ -46,11 +52,22 @@ local function queue_init(size)
     local q = ffi_new(queue_arr_type, size + 1)
     ffi.fill(q, ffi_sizeof(queue_type, size + 1), 0)
 
-    q[0].prev = q
-    q[0].next = q
+    if size == 0 then
+        q[0].prev = q
+        q[0].next = q
 
-    for i = 1, size do
-        queue_insert_tail(q, q[i])
+    else
+        local prev = q[0]
+        for i = 1, size do
+          local e = q[i]
+          prev.next = e
+          e.prev = prev
+          prev = e
+        end
+
+        local last = q[size]
+        last.next = q
+        q[0].prev = last
     end
 
     return q
@@ -64,10 +81,13 @@ end
 
 
 local function queue_remove(x)
-    x.next.prev = x.prev
-    x.prev.next = x.next
-    x.prev = NULL
-    x.next = NULL
+    local prev = x.prev
+    local next = x.next
+
+    next.prev = prev
+    prev.next = next
+    prev = NULL
+    next = NULL
 end
 
 
