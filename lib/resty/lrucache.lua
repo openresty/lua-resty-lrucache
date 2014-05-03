@@ -13,7 +13,7 @@ local tonumber = tonumber
 
 -- queue data types
 --
--- this queue type chains nodes circularly and the first node
+-- this queue is a double-ended queue and the first node
 -- is reserved for the queue itself.
 -- the implementation is mostly borrowed from nginx's ngx_queue_t data
 -- structure.
