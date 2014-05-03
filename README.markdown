@@ -160,6 +160,7 @@ TODO
 ====
 
 * add new method `get_stale` for fetching already expired items.
+* add new method `flush_all` for flushing out everything in the cache.
 
 [Back to TOC](#table-of-contents)
 
