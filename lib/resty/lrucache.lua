@@ -21,8 +21,7 @@ local tonumber = tonumber
 ffi.cdef[[
     typedef struct lrucache_queue_s  lrucache_queue_t;
     struct lrucache_queue_s {
-        int                     ref;
-        double                 expire;  /* in seconds */
+        double             expire;  /* in seconds */
         lrucache_queue_t  *prev;
         lrucache_queue_t  *next;
     };
