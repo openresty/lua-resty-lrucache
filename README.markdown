@@ -65,6 +65,18 @@ This library implements a simple LRU cache for [OpenResty](http://openresty.org)
 
 This cache also supports expiration time.
 
+The LRU cache resides completely in the Lua VM and is subject to Lua GC. So do not expect
+it to get shared across the OS process boundary. The upside is that you can cache
+arbitrary complex Lua values (like deep nested Lua tables) without the overhead of
+serialization (as with `ngx_lua`'s
+[shared dictionary API](https://github.com/chaoslawful/lua-nginx-module#lua_shared_dict)).
+The downside is that your cache is always limited to the current OS process
+(like the current nginx worker process). It does not really make much sense to use this
+library in the context of [init_by_lua](https://github.com/chaoslawful/lua-nginx-module#lua_shared_dict)
+because the cache will not get shared by any of the worker processes
+(unless you just want to "warm up" the cache with predefined items which will get
+inherited by the workers via `fork`).
+
 [Back to TOC](#table-of-contents)
 
 Methods
