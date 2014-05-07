@@ -150,13 +150,13 @@ bird: 76
             local lrucache = require "resty.lrucache"
             local c = lrucache.new(1)
 
-            c:set("dog", 32, 0.1)
+            c:set("dog", 32, 0.5)
             ngx.say("dog: ", c:get("dog"))
 
-            ngx.sleep(0.05)
+            ngx.sleep(0.25)
             ngx.say("dog: ", c:get("dog"))
 
-            ngx.sleep(0.051)
+            ngx.sleep(0.26)
             ngx.say("dog: ", c:get("dog"))
         ';
     }
