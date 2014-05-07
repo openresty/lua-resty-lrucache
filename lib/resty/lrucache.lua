@@ -85,6 +85,8 @@ local function queue_remove(x)
 
     next.prev = prev
     prev.next = next
+
+    -- for debugging purpose only:
     x.prev = NULL
     x.next = NULL
 end
