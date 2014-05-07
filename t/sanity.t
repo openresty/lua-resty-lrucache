@@ -170,3 +170,54 @@ dog: nil
 --- no_error_log
 [error]
 
+
+
+=== TEST 5: ttl
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local lim = 5
+            local c = lrucache.new(lim)
+            local n = 1000
+
+            for i = 1, n do
+                c:set("dog" .. i, i)
+                c:delete("dog" .. i, i)
+                c:set("dog" .. i, i)
+                local cnt = 0
+                for k, v in pairs(c.hasht) do
+                    cnt = cnt + 1
+                end
+                assert(cnt <= lim)
+            end
+
+            for i = 1, n do
+                local key = "dog" .. math.random(1, n)
+                c:get(key)
+            end
+
+            for i = 1, n do
+                local key = "dog" .. math.random(1, n)
+                c:get(key)
+                c:set("dog" .. i, i)
+
+                local cnt = 0
+                for k, v in pairs(c.hasht) do
+                    cnt = cnt + 1
+                end
+                assert(cnt <= lim)
+            end
+
+            ngx.say("ok")
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+ok
+
+--- no_error_log
+[error]
+

@@ -38,9 +38,9 @@ local NULL = ffi.null
 local function queue_insert_tail(h, x)
     local last = h[0].prev
     x.prev = last
-    x.prev.next = x
+    last.next = x
     x.next = h
-    last = x
+    h[0].prev = x
 end
 
 
@@ -85,8 +85,8 @@ local function queue_remove(x)
 
     next.prev = prev
     prev.next = next
-    prev = NULL
-    next = NULL
+    x.prev = NULL
+    x.next = NULL
 end
 
 
