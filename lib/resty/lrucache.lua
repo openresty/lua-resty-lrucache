@@ -5,6 +5,7 @@ local ffi = require "ffi"
 local ffi_new = ffi.new
 local ffi_sizeof = ffi.sizeof
 local ffi_cast = ffi.cast
+local ffi_fill = ffi.fill
 local ngx_now = ngx.now
 local uintptr_t = ffi.typeof("uintptr_t")
 local setmetatable = setmetatable
@@ -49,7 +50,7 @@ local function queue_init(size)
         size = 0
     end
     local q = ffi_new(queue_arr_type, size + 1)
-    ffi.fill(q, ffi_sizeof(queue_type, size + 1), 0)
+    ffi_fill(q, ffi_sizeof(queue_type, size + 1), 0)
 
     if size == 0 then
         q[0].prev = q
