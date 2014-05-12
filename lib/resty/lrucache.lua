@@ -1,15 +1,16 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 
-
 local ffi = require "ffi"
-local ffi_new = ffi.new
-local ffi_sizeof = ffi.sizeof
-local ffi_cast = ffi.cast
-local ngx_now = ngx.now
-local uintptr_t = ffi.typeof("uintptr_t")
-local setmetatable = setmetatable
-local tonumber = tonumber
 
+local ffi_new      = ffi.new
+local ffi_sizeof   = ffi.sizeof
+local ffi_cast     = ffi.cast
+local ffi_fill     = ffi.fill
+local ffi_NULL     = ffi.null
+local uintptr_t    = ffi.typeof("uintptr_t")
+local setmetatable = setmetatable
+local tonumber     = tonumber
+local ngx_now      = ngx.now
 
 -- queue data types
 --
@@ -29,18 +30,17 @@ ffi.cdef[[
 
 local queue_arr_type = ffi.typeof("lrucache_queue_t[?]")
 local queue_ptr_type = ffi.typeof("lrucache_queue_t*")
-local queue_type = ffi.typeof("lrucache_queue_t")
-local NULL = ffi.null
+local queue_type     = ffi.typeof("lrucache_queue_t")
 
 
 -- queue utility functions
 
 local function queue_insert_tail(h, x)
     local last = h[0].prev
-    x.prev = last
-    last.next = x
-    x.next = h
-    h[0].prev = x
+    x.prev     = last
+    last.next  = x
+    x.next     = h
+    h[0].prev  = x
 end
 
 
@@ -49,7 +49,7 @@ local function queue_init(size)
         size = 0
     end
     local q = ffi_new(queue_arr_type, size + 1)
-    ffi.fill(q, ffi_sizeof(queue_type, size + 1), 0)
+    ffi_fill(q, ffi_sizeof(queue_type, size + 1), 0)
 
     if size == 0 then
         q[0].prev = q
@@ -58,15 +58,15 @@ local function queue_init(size)
     else
         local prev = q[0]
         for i = 1, size do
-          local e = q[i]
+          local e   = q[i]
           prev.next = e
-          e.prev = prev
-          prev = e
+          e.prev    = prev
+          prev      = e
         end
 
         local last = q[size]
-        last.next = q
-        q[0].prev = last
+        last.next  = q
+        q[0].prev  = last
     end
 
     return q
@@ -87,16 +87,16 @@ local function queue_remove(x)
     prev.next = next
 
     -- for debugging purpose only:
-    x.prev = NULL
-    x.next = NULL
+    x.prev = ffi_NULL
+    x.next = ffi_NULL
 end
 
 
 local function queue_insert_head(h, x)
-    x.next = h[0].next
+    x.next      = h[0].next
     x.next.prev = x
-    x.prev = h
-    h[0].next = x
+    x.prev      = h
+    h[0].next   = x
 end
 
 
@@ -140,7 +140,7 @@ end
 
 function _M.get(self, key)
     local hasht = self.hasht
-    local val = hasht[key]
+    local val   = hasht[key]
     if not val then
         return nil
     end
@@ -164,7 +164,7 @@ function _M.delete(self, key)
     self.hasht[key] = nil
 
     local key2node = self.key2node
-    local node = key2node[key]
+    local node     = key2node[key]
 
     if not node then
         return false
@@ -181,13 +181,13 @@ end
 
 function _M.set(self, key, value, ttl)
     local hasht = self.hasht
-    hasht[key] = value
+    hasht[key]  = value
 
     local key2node = self.key2node
-    local node = key2node[key]
+    local node     = key2node[key]
     if not node then
         local free_queue = self.free_queue
-        local node2key = self.node2key
+        local node2key   = self.node2key
 
         if queue_is_empty(free_queue) then
             -- evict the least recently used key
@@ -198,7 +198,7 @@ function _M.set(self, key, value, ttl)
             -- print(key, ": evicting oldkey: ", oldkey, ", oldnode: ",
             --         tostring(node))
             if oldkey then
-                hasht[oldkey] = nil
+                hasht[oldkey]    = nil
                 key2node[oldkey] = nil
             end
 
