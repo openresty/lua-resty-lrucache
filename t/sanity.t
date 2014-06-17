@@ -173,6 +173,7 @@ dog: nil
 
 
 === TEST 5: ttl
+--- SKIP
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
