@@ -223,3 +223,31 @@ ok
 [error]
 --- timeout: 20
 
+
+=== TEST 6: load factor
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(1, 0.25)
+
+            c:set("dog", 32, 0.5)
+            ngx.say("dog: ", c:get("dog"))
+
+            ngx.sleep(0.25)
+            ngx.say("dog: ", c:get("dog"))
+
+            ngx.sleep(0.26)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 32
+dog: 32
+dog: nil
+
+--- no_error_log
+[error]
