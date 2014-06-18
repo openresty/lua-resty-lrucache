@@ -39,6 +39,7 @@ Synopsis
 
     location = /t {
         content_by_lua '
+            -- alternatively: local lrucache = require "resty.lrucache.pureffi"
             local lrucache = require "resty.lrucache"
 
             local c = lrucache.new(200)  -- allow up to 200 items in the cache
@@ -77,6 +78,20 @@ because the cache will not get shared by any of the worker processes
 (unless you just want to "warm up" the cache with predefined items which will get
 inherited by the workers via `fork`).
 
+There are two different implementations included in this library, in the form of
+two classes: `resty.lrucache` and `resty.lrucache.pureffi`. They share exactly the same API. The only difference is that the latter
+is a pure FFI implementation that also implements an FFI-based hash table
+for the cache lookup while the former uses native Lua tables for it.
+
+If the cache hit rate is relatively high, you should use the `resty.lrucache` class which is faster than `resty.lrucache.pureffi`.
+
+But if the cache hit rate is relatively low and there can be a *lot* of
+variations of keys inserted into and removed from the cache, then you should use the `resty.lrucache.pureffi` instead, because
+Lua tables are not good at removing keys frequently by design and you
+would see the `resizetab` function call in the LuaJIT runtime being very hot in
+[on-CPU flame graphs](https://github.com/openresty/stapxx#lj-lua-stacks) if
+you use the `resty.lrucache` class instead of `resty.lrucache.pureffi` in this use case.
+
 [Back to TOC](#table-of-contents)
 
 Methods
@@ -91,15 +106,26 @@ To load this library,
     local lrucache = require "resty.lrucache"
 ```
 
+or
+
+```lua
+    local lrucache = require "resty.lrucache.pureffi"
+```
+
 [Back to TOC](#table-of-contents)
 
 new
 ---
-`syntax: cache, err = lrucache.new(max_items)`
+`syntax: cache, err = lrucache.new(max_items [, load_factor])`
 
 Creates a new cache instance. If failed, returns `nil` and a string describing the error.
 
 The `max_items` argument specifies the maximal number of items held in the cache.
+
+The `load-factor` argument designates the "load factor" of the FFI-based hash-table used internally by `resty.lrucache.pureffi`;
+the default value is 0.5 (i.e. 50%); if the load factor is specified, it will be clamped
+to the range of `[0.1, 1]` (i.e. if load factor is greater than 1, it will be saturated to
+1; likewise, if load-factor is smaller than `0.1`, it will be clamped to `0.1`). This argument is only meaningful for `resty.lrucache.pureffi`.
 
 [Back to TOC](#table-of-contents)
 
@@ -210,6 +236,8 @@ Author
 
 Yichun "agentzh" Zhang (章亦春) <agentzh@gmail.com>, CloudFlare Inc.
 
+Shuxin Yang, CloudFlare Inc.
+
 [Back to TOC](#table-of-contents)
 
 Copyright and License
@@ -218,6 +246,8 @@ Copyright and License
 This module is licensed under the BSD license.
 
 Copyright (C) 2014, by Yichun "agentzh" Zhang, CloudFlare Inc.
+
+Copyright (C) 2014, by Shuxin Yang, CloudFlare Inc.
 
 All rights reserved.
 
