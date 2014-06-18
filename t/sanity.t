@@ -173,6 +173,7 @@ dog: nil
 
 
 === TEST 5: ttl
+--- SKIP
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
@@ -222,3 +223,65 @@ ok
 [error]
 --- timeout: 20
 
+
+
+=== TEST 6: load factor
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(1, 0.25)
+
+            assert(c.bucket_sz == 4)
+            ngx.say("ok")
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+ok
+--- no_error_log
+[error]
+
+
+
+=== TEST 7: load factor clamped to 0.1
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(3, 0.05)
+
+            assert(c.bucket_sz == 32)
+            ngx.say("ok")
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+ok
+--- no_error_log
+[error]
+
+
+
+=== TEST 8: load factor saturated to 1
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(3, 2.1)
+
+            assert(c.bucket_sz == 4)
+            ngx.say("ok")
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+ok
+--- no_error_log
+[error]

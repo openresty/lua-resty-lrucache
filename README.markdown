@@ -95,11 +95,15 @@ To load this library,
 
 new
 ---
-`syntax: cache, err = lrucache.new(max_items)`
+`syntax: cache, err = lrucache.new(max_items [,load-factor])`
 
 Creates a new cache instance. If failed, returns `nil` and a string describing the error.
 
 The `max_items` argument specifies the maximal number of items held in the cache.
+The `load-factor` argument designates the load-factor of the hash-table used internally;
+the default value is 0.5 (i.e. 50%); if the load-factor is specified, it will be clamped
+to the range of `[0.1, 1]` (i.e. if load-factor is greater than 1, it will be saturated to
+1; likewise, if load-factor is smaller than `0.1`, it will be clamped to `0.1`).
 
 [Back to TOC](#table-of-contents)
 
