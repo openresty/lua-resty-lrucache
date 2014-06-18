@@ -5,7 +5,7 @@ use Cwd qw(cwd);
 
 repeat_each(1);
 
-plan tests => repeat_each() * 13;
+plan tests => repeat_each() * 22;
 
 #no_diff();
 #no_long_string();
@@ -118,4 +118,59 @@ ok
 [error]
 --- error_log
 3 lrucache initialized.
+
+
+
+=== TEST 3: sanity
+--- http_config eval
+"$::HttpConfig"
+. qq!
+        init_by_lua '
+            local function log(...)
+                ngx.log(ngx.WARN, ...)
+            end
+
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(2)
+
+            collectgarbage()
+
+            local tab1 = {1, 2}
+            local tab2 = {3, 4}
+
+            c:set(tab1, 32)
+            c:set(tab2, 56)
+            log("tab1: ", c:get(tab1))
+            log("tab2: ", c:get(tab2))
+
+            c:set(tab1, 32)
+            c:set(tab2, 56)
+            log("tab1: ", c:get(tab1))
+            log("tab2: ", c:get(tab2))
+
+            c:delete(tab1)
+            c:delete(tab2)
+            log("tab1: ", c:get(tab1))
+            log("tab2: ", c:get(tab2))
+        ';
+!
+
+--- config
+    location = /t {
+        echo ok;
+    }
+--- request
+    GET /t
+--- response_body
+ok
+--- no_error_log
+[error]
+--- error_log
+tab1: 32
+tab2: 56
+tab1: 32
+tab2: 56
+tab1: nil
+tab2: nil
+
 
