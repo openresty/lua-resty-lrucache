@@ -84,12 +84,12 @@ ffi.cdef[[
          * free-list. The queue header is assigned ID 0. Since queue-header
          * is a sentinel node, 0 denodes "invalid ID".
          */
-        int id;
+        int                id;
 
         /* The bucket of the hash-table is implemented as a singly-linked list.
          * The "conflict" refers to the ID of the next node in the bucket.
          */
-        int conflict;
+        int                conflict;
 
         double             expire;  /* in seconds */
         lrucache_queue_t  *prev;
