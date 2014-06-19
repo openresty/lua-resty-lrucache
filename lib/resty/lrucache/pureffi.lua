@@ -82,8 +82,8 @@ end
 -- structure.
 
 ffi.cdef[[
-    typedef struct lrucache_queue_s  lrucache_queue_t;
-    struct lrucache_queue_s {
+    typedef struct lrucache_pureffi_queue_s  lrucache_pureffi_queue_t;
+    struct lrucache_pureffi_queue_s {
         /* Each node is assigned a unique ID at construction time, and the
          * ID remain immutatble, regardless the node is in active-list or
          * free-list. The queue header is assigned ID 0. Since queue-header
@@ -97,14 +97,14 @@ ffi.cdef[[
         int                conflict;
 
         double             expire;  /* in seconds */
-        lrucache_queue_t  *prev;
-        lrucache_queue_t  *next;
+        lrucache_pureffi_queue_t  *prev;
+        lrucache_pureffi_queue_t  *next;
     };
 ]]
 
-local queue_arr_type = ffi.typeof("lrucache_queue_t[?]")
-local queue_ptr_type = ffi.typeof("lrucache_queue_t*")
-local queue_type = ffi.typeof("lrucache_queue_t")
+local queue_arr_type = ffi.typeof("lrucache_pureffi_queue_t[?]")
+local queue_ptr_type = ffi.typeof("lrucache_pureffi_queue_t*")
+local queue_type = ffi.typeof("lrucache_pureffi_queue_t")
 local NULL = ffi.null
 
 
