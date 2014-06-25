@@ -97,6 +97,7 @@ ffi.cdef[[
         int                conflict;
 
         double             expire;  /* in seconds */
+
         lrucache_pureffi_queue_t  *prev;
         lrucache_pureffi_queue_t  *next;
     };
