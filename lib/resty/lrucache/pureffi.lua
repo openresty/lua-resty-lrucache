@@ -365,12 +365,13 @@ function _M.get(self, key)
     queue_remove(node)
     queue_insert_head(cache_queue, node)
 
-    if node.expire >= 0 and node.expire < ngx_now() then
+    local expire = node.expire
+    if expire >= 0 and expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
         return nil
     end
 
-    return self.val_v[node.id]
+    return self.val_v[node_id]
 end
 
 
