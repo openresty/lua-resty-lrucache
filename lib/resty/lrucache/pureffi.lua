@@ -345,7 +345,7 @@ local function insert_key(self, key, val, node)
     local key_hash = hash_string(self, key)
     local bucket_v = self.bucket_v
     node.conflict = bucket_v[key_hash]
-    bucket_v[key_hash] = node.id
+    bucket_v[key_hash] = node_id
 end
 
 
