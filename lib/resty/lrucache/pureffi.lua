@@ -366,7 +366,7 @@ function _M.get(self, key)
     queue_insert_head(cache_queue, node)
 
     if node.expire >= 0 and node.expire < ngx_now() then
-        print("expired: ", node.expire, " > ", ngx_now())
+        -- print("expired: ", node.expire, " > ", ngx_now())
         return nil
     end
 
