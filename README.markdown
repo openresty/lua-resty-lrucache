@@ -35,28 +35,32 @@ Synopsis
 ========
 
 ```nginx
+http {
     lua_package_path "/path/to/lua-resty-lrucache/lib/?.lua;;";
 
-    location = /t {
-        content_by_lua '
-            -- alternatively: local lrucache = require "resty.lrucache.pureffi"
-            local lrucache = require "resty.lrucache"
+    server {
+        location = /t {
+            content_by_lua '
+                -- alternatively: local lrucache = require "resty.lrucache.pureffi"
+                local lrucache = require "resty.lrucache"
 
-            local c = lrucache.new(200)  -- allow up to 200 items in the cache
-            if not c then
-                ngx.say("failed to create the cache: ", err)
-                return
-            end
+                local c = lrucache.new(200)  -- allow up to 200 items in the cache
+                if not c then
+                    ngx.say("failed to create the cache: ", err)
+                    return
+                end
 
-            c:set("dog", 32)
-            c:set("cat", 56)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+                c:set("dog", 32)
+                c:set("cat", 56)
+                ngx.say("dog: ", c:get("dog"))
+                ngx.say("cat: ", c:get("cat"))
 
-            c:set("dog", { age = 10 }, 0.1)  -- expire in 0.1 sec
-            c:delete("dog")
-        ';
+                c:set("dog", { age = 10 }, 0.1)  -- expire in 0.1 sec
+                c:delete("dog")
+            ';
+        }
     }
+}
 ```
 
 Description
