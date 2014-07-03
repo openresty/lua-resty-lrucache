@@ -35,7 +35,7 @@ Synopsis
 ========
 
 ```lua
--- example "myapp" module (myapp.lua)
+-- file myapp.lua: example "myapp" module
 
 local _M = {}
 
@@ -63,6 +63,8 @@ return _M
 ```
 
 ```nginx
+# nginx.conf
+
 http {
     lua_package_path "/path/to/lua-resty-lrucache/lib/?.lua;;";
 
