@@ -369,7 +369,7 @@ function _M.get(self, key)
     local expire = node.expire
     if expire >= 0 and expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil
+        return nil, self.val_v[node_id]
     end
 
     return self.val_v[node_id]

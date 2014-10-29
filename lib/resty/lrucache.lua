@@ -157,7 +157,7 @@ function _M.get(self, key)
 
     if node.expire >= 0 and node.expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil
+        return nil, val
     end
     return val
 end

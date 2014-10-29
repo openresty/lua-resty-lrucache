@@ -164,9 +164,11 @@ When the cache is full, the cache will automatically evict the least recently us
 
 get
 ---
-`syntax: data = cache:get(key)`
+`syntax: data, stale_data = cache:get(key)`
 
 Fetches a value with the key. If the key does not exist in the cache or has already expired, a `nil` value will be returned.
+
+Starting from `v0.03`, the stale data is also returned as the second return value if available.
 
 [Back to TOC](#table-of-contents)
 

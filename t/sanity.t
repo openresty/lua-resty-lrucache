@@ -165,7 +165,7 @@ bird: 76
 --- response_body
 dog: 32
 dog: 32
-dog: nil
+dog: nil32
 
 --- no_error_log
 [error]
