@@ -417,6 +417,7 @@ function _M.set(self, key, value, ttl)
         insert_key(self, key, value, node)
     else
         node = self.node_v + node_id
+        self.val_v[node_id] = value
     end
 
     queue_remove(node)

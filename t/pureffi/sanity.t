@@ -279,3 +279,112 @@ tab2: nil
 --- no_error_log
 [error]
 
+
+
+=== TEST 9: replace value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache.pureffi"
+            local c = lrucache.new(1)
+
+            c:set("dog", 32)
+            ngx.say("dog: ", c:get("dog"))
+
+            c:set("dog", 33)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 32
+dog: 33
+
+--- no_error_log
+[error]
+
+
+
+=== TEST 10: replace value 2
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache.pureffi"
+            local c = lrucache.new(1)
+
+            c:set("dog", 32, 1.0)
+            ngx.say("dog: ", c:get("dog"))
+
+            c:set("dog", 33, 0.3)
+            ngx.say("dog: ", c:get("dog"))
+
+            ngx.sleep(0.4)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 32
+dog: 33
+dog: nil33
+
+--- no_error_log
+[error]
+
+
+
+=== TEST 11: replace value 3 (the old value has longer expire time)
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache.pureffi"
+            local c = lrucache.new(1)
+
+            c:set("dog", 32, 0.3)
+            c:set("dog", 33, 0.1)
+            ngx.sleep(0.05)
+            ngx.say("dog: ", c:get("dog"))
+
+            ngx.sleep(0.1)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 33
+dog: nil33
+
+--- no_error_log
+[error]
+
+
+
+=== TEST 12: replace value 4
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache.pureffi"
+            local c = lrucache.new(1)
+
+            c:set("dog", 32, 0.1)
+            ngx.sleep(0.2)
+
+            c:set("dog", 33)
+            ngx.sleep(0.2)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 33
+
+--- no_error_log
+[error]
