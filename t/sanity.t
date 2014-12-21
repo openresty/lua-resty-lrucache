@@ -222,3 +222,29 @@ ok
 [error]
 --- timeout: 20
 
+
+
+=== TEST 6: replace value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(1)
+
+            c:set("dog", 32)
+            ngx.say("dog: ", c:get("dog"))
+
+            c:set("dog", 33)
+            ngx.say("dog: ", c:get("dog"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 32
+dog: 33
+
+--- no_error_log
+[error]
+
