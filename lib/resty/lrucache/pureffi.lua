@@ -1,6 +1,60 @@
 -- Copyright (C) Yichun Zhang (agentzh)
 -- Copyright (C) Shuxin Yang
 
+--[[
+  This module implement a key/value cache store. We adopt LRU as our
+replace/evict policy. Each key/value pair is tagged with a Time-to-Live (TTL);
+from user's perspective, stale pairs are automatically removed from the cache.
+
+Why FFI
+-------
+  In Lua, expression "table[key] = nil" does not *PHYSICALLY* remove the value
+associated with the key; it just set the value to be nil! So the table will
+keep growing with large number of the key/nil pairs which will be purged until
+resize() operator is called.
+
+  This "feature" is terribly ill-suited to what we need. Therefore we have to
+rely on FFI to build a hash-table where any entry can be physically deleted
+immediately.
+
+Under the hood:
+--------------
+  In concept, we introduce three data structures to implement the cache store:
+    1. key/value vector for storing keys and values.
+    2. a queue to mimic the LRU.
+    3. hash-table for looking up the value for a given key.
+
+  Unfortunately, efficiency and clarity usually come at each other cost. The
+data strucutres we are using are slightly more complicated than what we
+described above.
+
+   o. Lua does not have efficient way to store a vector of pair. So, we use
+      two vectors for key/value pair: one for keys and the other for values
+      (_M.key_v and _M.val_v, respectively), and i-th key corresponds to
+      i-th value.
+
+      A key/value pair is identified by the "id" field in a "node" (we shall
+      discuss node later)
+
+    o. The queue is nothing more than a doubly-linked list of "node" linked via
+        lrucache_pureffi_queue_s::{next|prev} fields.
+
+    o. The hash-table has two parts:
+        - the _M.bucket_v[] a vector of bucket, indiced by hash-value, and
+        - a bucket is a singly-linked list of "node" via the
+          lrucache_pureffi_queue_s::conflict field.
+
+      A key must be a string, and the hash value of a key is evaluated by:
+      crc32(key) % size(_M.bucket_v). We mandate size(_M.bucket_v) being a
+      power-of-two in order to avoid expensive modulo operation.
+
+    At the heart of the module is an array of "node" (of type
+    lrucache_pureffi_queue_s). A node:
+      - keeps the meta-data of its corresponding key/value pair
+        (embodied by the "id", and "expire" field);
+      - is a part of LRU queue (embodied by "prev" and "next" fields);
+      - is a part of hash-table (mbodied by the "conflict" field).
+]]
 
 local ffi = require "ffi"
 local bit = require "bit"
@@ -82,12 +136,21 @@ end
 -- structure.
 
 ffi.cdef[[
+    /* A lrucache_pureffi_queue_s node hook together three data structures:
+     *   o. the key/value store as embodied by the "id" (which is in essence the
+     *      indentifier of key/pair pair) and the "expire" (which is a metadata
+     *      of the corresponding key/pair pair).
+     *   o. The LRU queue via the prev/next fields.
+     *   o. The hash-tabble as embodied by the "conflict" field.
+     */
     typedef struct lrucache_pureffi_queue_s  lrucache_pureffi_queue_t;
     struct lrucache_pureffi_queue_s {
         /* Each node is assigned a unique ID at construction time, and the
          * ID remain immutatble, regardless the node is in active-list or
          * free-list. The queue header is assigned ID 0. Since queue-header
          * is a sentinel node, 0 denodes "invalid ID".
+         *
+         * Intuitively, we can the "id" as the identifier of key/value pair.
          */
         int                id;
 
@@ -109,8 +172,13 @@ local queue_type = ffi.typeof("lrucache_pureffi_queue_t")
 local NULL = ffi.null
 
 
--- queue utility functions
+--========================================================================
+--
+--              Queue utility functions
+--
+--========================================================================
 
+-- Append the element "x" to the given queue "h".
 local function queue_insert_tail(h, x)
     local last = h[0].prev
     x.prev = last
@@ -120,6 +188,11 @@ local function queue_insert_tail(h, x)
 end
 
 
+--[[
+Allocate a queue with size + 1 elements. Elements are linked together in a
+circular way, i.e. the last element's "next" points to the first element,
+while the first element's "prev" element points to the last element.
+]]
 local function queue_init(size)
     if not size then
         size = 0
@@ -169,6 +242,7 @@ local function queue_remove(x)
 end
 
 
+-- Insert the element "x" the to the given queue "h"
 local function queue_insert_head(h, x)
     x.next = h[0].next
     x.next.prev = x
@@ -187,17 +261,45 @@ local function queue_head(h)
 end
 
 
--- true module stuffs
+--========================================================================
+--
+--              Miscellaneous Utility Functions
+--
+--========================================================================
+
+local function ptr2num(ptr)
+    return tonumber(ffi_cast(uintptr_t, ptr))
+end
+
+local function crc32_ptr(ptr)
+    local crc32 = 0;
+
+    local p = brshift(ptr2num(ptr), 3)
+    local b = band(p, 255)
+    crc32 = crc_tab[b]
+
+    b = band(brshift(p, 8), 255)
+    crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
+
+    b = band(brshift(p, 16), 255)
+    crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
+
+    --b = band(brshift(p, 24), 255)
+    --crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
+    return crc32
+end
+
+
+--========================================================================
+--
+--              Implementation of "export" functions
+--
+--========================================================================
 
 local _M = {
     _VERSION = '0.03'
 }
 local mt = { __index = _M }
-
-
-local function ptr2num(ptr)
-    return tonumber(ffi_cast(uintptr_t, ptr))
-end
 
 
 -- "size" specifies the maximum number of entries in the LRU queue, and the
@@ -222,6 +324,7 @@ function _M.new(size, load_factor)
     end
 
     local bs_min = size / load_f
+    -- the bucket_sz *MUST* be a power-of-two. See the hash_string().
     local bucket_sz = 1
     repeat
         bucket_sz = bucket_sz * 2
@@ -251,25 +354,6 @@ function _M.new(size, load_factor)
 end
 
 
-local function crc32_ptr(ptr)
-    local crc32 = 0;
-
-    local p = brshift(ptr2num(ptr), 3)
-    local b = band(p, 255)
-    crc32 = crc_tab[b]
-
-    b = band(brshift(p, 8), 255)
-    crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
-
-    b = band(brshift(p, 16), 255)
-    crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
-
-    --b = band(brshift(p, 24), 255)
-    --crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
-    return crc32
-end
-
-
 local function hash_string(self, str)
     local c_str = ffi_cast(c_str_t, str)
 
@@ -278,6 +362,7 @@ local function hash_string(self, str)
     -- hint: bucket is 0-based
     return hv
 end
+
 
 -- Search the node associated with the key in the bucket, if found returns
 -- the the id of the node, and the id of its previous node in the conflict list.
@@ -299,6 +384,7 @@ local function _find_node_in_bucket(key, key_v, node_v, bucket_hdr_id)
 end
 
 
+-- Return the node corresponding to the key/val.
 local function find_key(self, key)
     local key_hash = hash_string(self, key)
     return _find_node_in_bucket(key, self.key_v, self.node_v,
@@ -306,8 +392,15 @@ local function find_key(self, key)
 end
 
 
--- Return the index of the node associated with the key, or nil if the node
--- was not found.
+--[[ This function tries to
+  1. Remove the given key and the associated value from the key/value store,
+  2. Remove the entry associated with the key from the hash-table.
+
+  NOTE: all queues remain intact.
+
+  If there was a node bound to the key/val, return that node; otherwise,
+  nil is returned.
+]]
 local function remove_key(self, key)
     local key_v = self.key_v
     local val_v = self.val_v
@@ -323,7 +416,7 @@ local function remove_key(self, key)
         key_v[cur] = nil
         val_v[cur] = nil
 
-        -- Remote the node from the hash table
+        -- Remove the node from the hash table
         local next_node = node_v[cur].conflict
         if prev ~= 0 then
             node_v[prev].conflict = next_node
@@ -337,12 +430,16 @@ local function remove_key(self, key)
 end
 
 
+--[[ Bind the key/val with the given node, and insert the node into the Hashtab.
+    NOTE: this function does not touch any queue
+]]
 local function insert_key(self, key, val, node)
+    -- Bind the key/val with the node
     local node_id = node.id
     self.key_v[node_id] = key
     self.val_v[node_id] = val
 
-    -- maintain the hash table
+    -- Insert the node into the hash-table
     local key_hash = hash_string(self, key)
     local bucket_v = self.bucket_v
     node.conflict = bucket_v[key_hash]
