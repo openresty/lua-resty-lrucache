@@ -2,7 +2,7 @@
 -- Copyright (C) Shuxin Yang
 
 --[[
-  This module implement a key/value cache store. We adopt LRU as our
+  This module implements a key/value cache store. We adopt LRU as our
 replace/evict policy. Each key/value pair is tagged with a Time-to-Live (TTL);
 from user's perspective, stale pairs are automatically removed from the cache.
 
@@ -45,15 +45,16 @@ described above.
           lrucache_pureffi_queue_s::conflict field.
 
       A key must be a string, and the hash value of a key is evaluated by:
-      crc32(key) % size(_M.bucket_v). We mandate size(_M.bucket_v) being a
-      power-of-two in order to avoid expensive modulo operation.
+      crc32(key-cast-to-pointer) % size(_M.bucket_v).
+      We mandate size(_M.bucket_v) being a power-of-two in order to avoid
+      expensive modulo operation.
 
     At the heart of the module is an array of "node" (of type
     lrucache_pureffi_queue_s). A node:
       - keeps the meta-data of its corresponding key/value pair
         (embodied by the "id", and "expire" field);
       - is a part of LRU queue (embodied by "prev" and "next" fields);
-      - is a part of hash-table (mbodied by the "conflict" field).
+      - is a part of hash-table (embodied by the "conflict" field).
 ]]
 
 local ffi = require "ffi"
@@ -150,7 +151,8 @@ ffi.cdef[[
          * free-list. The queue header is assigned ID 0. Since queue-header
          * is a sentinel node, 0 denodes "invalid ID".
          *
-         * Intuitively, we can the "id" as the identifier of key/value pair.
+         * Intuitively, we can view the "id" as the identifier of key/value
+         * pair.
          */
         int                id;
 
@@ -271,6 +273,7 @@ local function ptr2num(ptr)
     return tonumber(ffi_cast(uintptr_t, ptr))
 end
 
+
 local function crc32_ptr(ptr)
     local crc32 = 0;
 
@@ -313,7 +316,7 @@ function _M.new(size, load_factor)
         return nil, "size too small"
     end
 
-    -- determine bucket size, which must be power of two
+    -- Determine bucket size, which must be power of two.
     local load_f = load_factor
     if not load_factor then
         load_f = 0.5
@@ -324,7 +327,7 @@ function _M.new(size, load_factor)
     end
 
     local bs_min = size / load_f
-    -- the bucket_sz *MUST* be a power-of-two. See the hash_string().
+    -- The bucket_sz *MUST* be a power-of-two. See the hash_string().
     local bucket_sz = 1
     repeat
         bucket_sz = bucket_sz * 2
@@ -344,7 +347,7 @@ function _M.new(size, load_factor)
     -- node_v[i] evaluates to the element of ID "i".
     self.node_v = self.free_queue
 
-    -- allocate the array-part of the key_v, val_v, bucket_v.
+    -- Allocate the array-part of the key_v, val_v, bucket_v.
     local key_v = self.key_v
     local val_v = self.val_v
     local bucket_v = self.bucket_v
@@ -359,7 +362,7 @@ local function hash_string(self, str)
 
     local hv = crc32_ptr(c_str)
     hv = band(hv, self.bucket_sz - 1)
-    -- hint: bucket is 0-based
+    -- Hint: bucket is 0-based
     return hv
 end
 
