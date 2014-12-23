@@ -345,12 +345,12 @@ dog: nil33
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
-            c:set("dog", 32, 0.3)
-            c:set("dog", 33, 0.1)
-            ngx.sleep(0.05)
+            c:set("dog", 32, 1.2)
+            c:set("dog", 33, 0.6)
+            ngx.sleep(0.2)
             ngx.say("dog: ", c:get("dog"))
 
-            ngx.sleep(0.1)
+            ngx.sleep(0.5)
             ngx.say("dog: ", c:get("dog"))
         ';
     }
