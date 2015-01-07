@@ -5,7 +5,7 @@ LUA_INCLUDE_DIR ?= $(PREFIX)/include
 LUA_LIB_DIR ?=     $(PREFIX)/lib/lua/$(LUA_VERSION)
 INSTALL ?= install
 
-.PHONY: all test install
+.PHONY: all test install stress_test clean
 
 all: ;
 
@@ -17,3 +17,8 @@ install: all
 test: all
 	PATH=$(OPENRESTY_PREFIX)/nginx/sbin:$$PATH prove -I../test-nginx/lib -r t
 
+stress_test:
+	make -C stress_test ITERATOR=8
+
+clean:
+	make -C stress_test clean
