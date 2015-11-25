@@ -530,5 +530,33 @@ function _M.set(self, key, value, ttl)
     end
 end
 
+function _M.incr(self, key, ttl, by)
+    by = by or 1
+
+    if type(key) ~= "string" then
+        key = tostring(key)
+    end
+
+    local node_id = find_key(self, key)
+    local node
+    if not node_id then
+        return nil
+    end
+    
+    node = self.node_v + node_id
+    local value = self.val_v[node_id] + by
+    self.val_v[node_id] = value
+
+    queue_remove(node)
+    queue_insert_head(self.cache_queue, node)
+
+    if ttl then
+        node.expire = ngx_now() + ttl
+    else
+        node.expire = -1
+    end
+    
+    return value
+end
 
 return _M
