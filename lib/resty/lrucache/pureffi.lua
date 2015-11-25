@@ -540,7 +540,7 @@ function _M.incr(self, key, ttl, by)
     local node_id = find_key(self, key)
     local node
     if not node_id then
-        return nil
+        return
     end
     
     node = self.node_v + node_id

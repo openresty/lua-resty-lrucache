@@ -232,7 +232,7 @@ function _M.incr(self, key, ttl, by)
     local hasht = self.hasht
     local value = hasht[key]
     if value == nil then
-        return value
+        return
     end
     value = value + by
     hasht[key] = value
