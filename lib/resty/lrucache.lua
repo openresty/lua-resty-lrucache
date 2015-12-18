@@ -130,7 +130,6 @@ function _M.new(size)
     end
 
     local self = {
-        keys = {},
         hasht = {},
         free_queue = queue_init(size),
         cache_queue = queue_init(),
