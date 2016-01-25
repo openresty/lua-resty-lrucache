@@ -191,7 +191,7 @@ Prerequisites
 Installation
 ============
 
-It is recommended to use the latest [ngx_openresty bundle](http://openresty.org) directly. At least ngx_openresty 1.4.2.9 is required. And you need to enable LuaJIT when building your ngx_openresty
+It is recommended to use the latest [OpenResty bundle](http://openresty.org) directly. At least OpenResty 1.4.2.9 is required. And you need to enable LuaJIT when building your OpenResty
 bundle by passing the `--with-luajit` option to its `./configure` script. No extra Nginx configuration is required.
 
 If you want to use this library with your own Nginx build (with ngx_lua), then you need to
