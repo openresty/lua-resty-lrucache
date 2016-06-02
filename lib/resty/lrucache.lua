@@ -181,16 +181,15 @@ function _M.get(self, key)
     end
 
     local node = self.key2node[key]
+    if node.expire >= 0 and node.expire < ngx_now() then
+        return nil, val
+    end
 
     -- print(key, ": moving node ", tostring(node), " to cache queue head")
     local cache_queue = self.cache_queue
     queue_remove(node)
     queue_insert_head(cache_queue, node)
 
-    if node.expire >= 0 and node.expire < ngx_now() then
-        -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil, val
-    end
     return val
 end
 
@@ -234,10 +233,15 @@ function _M.incr(self, key, ttl, by)
     if value == nil then
         return
     end
+
+    local node = handle_lru(self,key)
+    if node.expire >= 0 and node.expire < ngx_now() then
+        return nil
+    end
+
     value = value + by
     hasht[key] = value
 
-    local node = handle_lru(self,key)
     queue_remove(node)
     queue_insert_head(self.cache_queue, node)
 
@@ -246,7 +250,26 @@ function _M.incr(self, key, ttl, by)
     else
         node.expire = -1
     end
+    return value;
 end
 
+function _M.cleanup(self, n)
+    n = n or 0
+    local node2key = self.node2key
+    local cachequeue = self.cache_queue
+    local now = ngx_now()
+    local node = queue_last(cachequeue)
+    while node ~= cachequeue do
+        local expire = node.expire
+        if expire >= 0 and expire < now then
+            self:delete(ptr2num(node2key[node]))
+        end
+        n = n - 1
+        if n == 0 then
+            return
+        end
+        node = node.prev
+    end
+end
 
 return _M
