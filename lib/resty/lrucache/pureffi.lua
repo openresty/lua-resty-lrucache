@@ -119,6 +119,8 @@ local crc_tab = ffi.new("const unsigned int[256]", {
 
 local setmetatable = setmetatable
 local tonumber = tonumber
+local tostring = tostring
+local type = type
 
 local brshift = bit.rshift
 local bxor = bit.bxor
@@ -169,7 +171,7 @@ ffi.cdef[[
 ]]
 
 local queue_arr_type = ffi.typeof("lrucache_pureffi_queue_t[?]")
-local queue_ptr_type = ffi.typeof("lrucache_pureffi_queue_t*")
+--local queue_ptr_type = ffi.typeof("lrucache_pureffi_queue_t*")
 local queue_type = ffi.typeof("lrucache_pureffi_queue_t")
 local NULL = ffi.null
 
@@ -275,11 +277,9 @@ end
 
 
 local function crc32_ptr(ptr)
-    local crc32 = 0;
-
     local p = brshift(ptr2num(ptr), 3)
     local b = band(p, 255)
-    crc32 = crc_tab[b]
+    local crc32 = crc_tab[b]
 
     b = band(brshift(p, 8), 255)
     crc32 = bxor(brshift(crc32, 8), crc_tab[band(bxor(crc32, b), 255)])
@@ -348,9 +348,9 @@ function _M.new(size, load_factor)
     self.node_v = self.free_queue
 
     -- Allocate the array-part of the key_v, val_v, bucket_v.
-    local key_v = self.key_v
-    local val_v = self.val_v
-    local bucket_v = self.bucket_v
+    --local key_v = self.key_v
+    --local val_v = self.val_v
+    --local bucket_v = self.bucket_v
     ffi_fill(self.bucket_v, ffi_sizeof(int_t, bucket_sz), 0)
 
     return setmetatable(self, mt)

@@ -83,7 +83,7 @@ http {
 Description
 ===========
 
-This library implements a simple LRU cache for [OpenResty](http://openresty.org) and the [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) module.
+This library implements a simple LRU cache for [OpenResty](http://openresty.org) and the [ngx_lua](https://github.com/openresty/lua-nginx-module) module.
 
 This cache also supports expiration time.
 
@@ -91,10 +91,10 @@ The LRU cache resides completely in the Lua VM and is subject to Lua GC. So do n
 it to get shared across the OS process boundary. The upside is that you can cache
 arbitrary complex Lua values (like deep nested Lua tables) without the overhead of
 serialization (as with `ngx_lua`'s
-[shared dictionary API](https://github.com/chaoslawful/lua-nginx-module#lua_shared_dict)).
+[shared dictionary API](https://github.com/openresty/lua-nginx-module#lua_shared_dict)).
 The downside is that your cache is always limited to the current OS process
 (like the current nginx worker process). It does not really make much sense to use this
-library in the context of [init_by_lua](https://github.com/chaoslawful/lua-nginx-module#lua_shared_dict)
+library in the context of [init_by_lua](https://github.com/openresty/lua-nginx-module#lua_shared_dict)
 because the cache will not get shared by any of the worker processes
 (unless you just want to "warm up" the cache with predefined items which will get
 inherited by the workers via `fork`).
@@ -120,7 +120,7 @@ Methods
 
 To load this library,
 
-1. you need to specify this library's path in ngx_lua's [lua_package_path](https://github.com/chaoslawful/lua-nginx-module#lua_package_path) directive. For example, `lua_package_path "/path/to/lua-resty-lrucache/lib/?.lua;;";`.
+1. you need to specify this library's path in ngx_lua's [lua_package_path](https://github.com/openresty/lua-nginx-module#lua_package_path) directive. For example, `lua_package_path "/path/to/lua-resty-lrucache/lib/?.lua;;";`.
 2. you use `require` to load the library into a local Lua variable:
 
 ```lua
@@ -184,21 +184,21 @@ Prerequisites
 =============
 
 * [LuaJIT](http://luajit.org) 2.0+
-* [ngx_lua](https://github.com/chaoslawful/lua-nginx-module) 0.8.10+
+* [ngx_lua](https://github.com/openresty/lua-nginx-module) 0.8.10+
 
 [Back to TOC](#table-of-contents)
 
 Installation
 ============
 
-It is recommended to use the latest [ngx_openresty bundle](http://openresty.org) directly. At least ngx_openresty 1.4.2.9 is required. And you need to enable LuaJIT when building your ngx_openresty
+It is recommended to use the latest [OpenResty bundle](http://openresty.org) directly. At least OpenResty 1.4.2.9 is required. And you need to enable LuaJIT when building your OpenResty
 bundle by passing the `--with-luajit` option to its `./configure` script. No extra Nginx configuration is required.
 
 If you want to use this library with your own Nginx build (with ngx_lua), then you need to
 ensure you are using at least ngx_lua 0.8.10.
 
 Also, You need to configure
-the [lua_package_path](https://github.com/chaoslawful/lua-nginx-module#lua_package_path) directive to
+the [lua_package_path](https://github.com/openresty/lua-nginx-module#lua_package_path) directive to
 add the path of your lua-resty-lrucache source tree to ngx_lua's Lua module search path, as in
 
 ```nginx
@@ -249,7 +249,7 @@ Bugs and Patches
 
 Please report bugs or submit patches by
 
-1. creating a ticket on the [GitHub Issue Tracker](http://github.com/agentzh/lua-resty-lrucache/issues),
+1. creating a ticket on the [GitHub Issue Tracker](https://github.com/openresty/lua-resty-lrucache/issues),
 1. or posting to the [OpenResty community](#community).
 
 [Back to TOC](#table-of-contents)
@@ -268,9 +268,9 @@ Copyright and License
 
 This module is licensed under the BSD license.
 
-Copyright (C) 2014-2015, by Yichun "agentzh" Zhang, CloudFlare Inc.
+Copyright (C) 2014-2016, by Yichun "agentzh" Zhang, CloudFlare Inc.
 
-Copyright (C) 2014-2015, by Shuxin Yang, CloudFlare Inc.
+Copyright (C) 2014-2016, by Shuxin Yang, CloudFlare Inc.
 
 All rights reserved.
 
