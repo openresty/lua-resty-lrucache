@@ -254,20 +254,34 @@ end
 
 function _M.cleanup(self, n)
     n = n or 0
+    local key2node = self.key2node
     local node2key = self.node2key
     local cachequeue = self.cache_queue
     local now = ngx_now()
     local node = queue_last(cachequeue)
     while node ~= cachequeue do
         local expire = node.expire
-        if expire >= 0 and expire < now then
-            self:delete(ptr2num(node2key[node]))
+        if expire >= 0 and expire <= now then
+            local next = node.next
+
+            local ptr = ptr2num(node)
+            local key = node2key[ptr]
+
+            self.hasht[key] = nil
+            key2node[key] = nil
+            self.node2key[ptr] = nil
+
+            queue_remove(node)
+            queue_insert_tail(self.free_queue, node)
+
+            node = next.prev
+        else
+            node = node.prev
         end
         n = n - 1
         if n == 0 then
             return
         end
-        node = node.prev
     end
 end
 
