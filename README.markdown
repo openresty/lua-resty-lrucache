@@ -1,7 +1,7 @@
 Name
 ====
 
-lua-resty-lrucache - in-Lua LRU Cache based on LuaJIT FFI
+lua-resty-lrucache - Lua-land LRU Cache based on LuaJIT FFI
 
 Table of Contents
 =================
