@@ -29,7 +29,6 @@ ffi.cdef[[
 ]]
 
 local queue_arr_type = ffi.typeof("lrucache_queue_t[?]")
-local queue_ptr_type = ffi.typeof("lrucache_queue_t*")
 local queue_type = ffi.typeof("lrucache_queue_t")
 local NULL = ffi.null
 
