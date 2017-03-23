@@ -142,7 +142,7 @@ end
 function _M.get(self, key)
     local hasht = self.hasht
     local val = hasht[key]
-    if not val then
+    if val == nil then
         return nil
     end
 
