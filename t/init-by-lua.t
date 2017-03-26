@@ -5,7 +5,7 @@ use Cwd qw(cwd);
 
 repeat_each(1);
 
-plan tests => repeat_each() * 13;
+plan tests => repeat_each() * 15;
 
 #no_diff();
 #no_long_string();
@@ -55,6 +55,12 @@ __DATA__
             c:delete("cat")
             log("dog: ", c:get("dog"))
             log("cat: ", c:get("cat"))
+
+            c:set("false-value", false)
+            log("false-value: ", c:get("false-value"))
+
+            c:delete("false-value")
+            log("false-value: ", c:get("false-value"))
         ';
 !
 
@@ -75,6 +81,8 @@ dog: 32
 cat: 56
 dog: nil
 cat: nil
+false-value: false
+false-value: nil
 
 
 
