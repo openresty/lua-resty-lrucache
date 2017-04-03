@@ -36,7 +36,7 @@ __DATA__
                 ngx.log(ngx.WARN, ...)
             end
 
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(2)
 
             collectgarbage()
