@@ -72,4 +72,3 @@ cat: 56
 
 --- no_error_log
 [error]
-
