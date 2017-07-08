@@ -15,6 +15,7 @@ Table of Contents
     * [set](#set)
     * [get](#get)
     * [delete](#delete)
+    * [flush_all](#flush_all)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [TODO](#todo)
@@ -57,6 +58,8 @@ function _M.go()
 
     c:set("dog", { age = 10 }, 0.1)  -- expire in 0.1 sec
     c:delete("dog")
+
+    c:flush_all()  -- flush all the cached data
 end
 
 return _M
@@ -177,6 +180,14 @@ delete
 `syntax: cache:delete(key)`
 
 Removes an item specified by the key from the cache.
+
+[Back to TOC](#table-of-contents)
+
+flush_all
+---------
+`syntax: cache:flush_all(key)`
+
+Flushes all the existing data (if any) in the current cache instance. This is an `O(1)` operation and should be much faster than create a brand new cache instance.
 
 [Back to TOC](#table-of-contents)
 
