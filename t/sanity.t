@@ -247,3 +247,35 @@ dog: 33
 
 --- no_error_log
 [error]
+
+
+
+=== TEST 7: flush value
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(2)
+
+            c:set("dog", 32)
+            ngx.say("dog: ", c:get("dog"))
+
+            c:set("cat", 33)
+            ngx.say("cat: ", c:get("cat"))
+
+            c:flush_all()
+            ngx.say("dog: ", c:get("dog"))
+            ngx.say("cat: ", c:get("cat"))
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+dog: 32
+cat: 33
+dog: nil
+cat: nil
+
+--- no_error_log
+[error]

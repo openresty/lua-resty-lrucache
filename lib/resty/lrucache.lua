@@ -11,6 +11,21 @@ local uintptr_t = ffi.typeof("uintptr_t")
 local setmetatable = setmetatable
 local tonumber = tonumber
 
+if string.find(jit.version, " 2.0") then
+    ngx.log(ngx.ALERT, "use of lua-resty-lrucache with LuaJIT 2.0 is ",
+    "not recommended; use LuaJIT 2.1+ instead")
+end
+
+
+local ok, tb_clear = pcall(require, "table.clear")
+if not ok then
+    tb_clear = function (tab)
+        for k, _ in pairs(tab) do
+            tab[k] = nil
+        end
+    end
+end
+
 
 -- queue data types
 --
@@ -223,5 +238,17 @@ function _M.set(self, key, value, ttl)
     end
 end
 
+function _M.flush_all(self)
+    tb_clear(self.hasht)
+    tb_clear(self.node2key)
+    tb_clear(self.key2node)
+    local cache_queue = self.cache_queue
+    local free_queue = self.free_queue
+    while not queue_is_empty(cache_queue) do
+        local node = cache_queue[0].prev
+        queue_remove(node)
+        queue_insert_tail(free_queue, node)
+    end
+end
 
 return _M
