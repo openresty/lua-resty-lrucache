@@ -58,7 +58,7 @@ local function queue_init(size)
     else
         local prev = q[0]
         for i = 1, size do
-          local e = q[i]
+          local e = q + i
           prev.next = e
           e.prev = prev
           prev = e
