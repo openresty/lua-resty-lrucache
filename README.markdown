@@ -15,6 +15,8 @@ Table of Contents
     * [set](#set)
     * [get](#get)
     * [delete](#delete)
+    * [count](#count)
+    * [capacity](#capacity)
     * [flush_all](#flush_all)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -180,6 +182,32 @@ delete
 `syntax: cache:delete(key)`
 
 Removes an item specified by the key from the cache.
+
+[Back to TOC](#table-of-contents)
+
+count
+-----
+`syntax: count = cache:count()`
+
+Returns the number of items currently stored in the cache **including**
+expired items if any.
+
+The returned `count` value will always be greater or equal to 0 and smaller
+than or equal to the `size` argument given to [`cache:new`](#new).
+
+This method was added in the `v0.10` release.
+
+[Back to TOC](#table-of-contents)
+
+capacity
+--------
+`syntax: size = cache:capacity()`
+
+Returns the maximum number of items the cache can hold. The return value is the
+same as the `size` argument given to [`cache:new`](#new) when the cache was
+created.
+
+This method was added in the `v0.10` release.
 
 [Back to TOC](#table-of-contents)
 

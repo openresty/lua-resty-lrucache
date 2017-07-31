@@ -151,8 +151,20 @@ function _M.new(size)
         cache_queue = queue_init(),
         key2node = {},
         node2key = {},
+        num_items = 0,
+        max_items = size,
     }
     return setmetatable(self, mt)
+end
+
+
+function _M.count(self)
+    return self.num_items
+end
+
+
+function _M.capacity(self)
+    return self.max_items
 end
 
 
@@ -193,6 +205,7 @@ function _M.delete(self, key)
 
     queue_remove(node)
     queue_insert_tail(self.free_queue, node)
+    self.num_items = self.num_items - 1
     return true
 end
 
@@ -223,6 +236,8 @@ function _M.set(self, key, value, ttl)
         else
             -- take a free queue node
             node = queue_head(free_queue)
+            -- only add count if we are not evicting
+            self.num_items = self.num_items + 1
             -- print(key, ": get a new free node: ", tostring(node))
         end
 

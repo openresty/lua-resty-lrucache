@@ -341,7 +341,8 @@ function _M.new(size, load_factor)
         node_v = nil,
         key_v = tab_new(size, 0),
         val_v = tab_new(size, 0),
-        bucket_v = ffi_new(int_array_t, bucket_sz)
+        bucket_v = ffi_new(int_array_t, bucket_sz),
+        num_items = 0,
     }
     -- "note_v" is an array of all the nodes used in the LRU queue. Exprpession
     -- node_v[i] evaluates to the element of ID "i".
@@ -354,6 +355,16 @@ function _M.new(size, load_factor)
     ffi_fill(self.bucket_v, ffi_sizeof(int_t, bucket_sz), 0)
 
     return setmetatable(self, mt)
+end
+
+
+function _M.count(self)
+    return self.num_items
+end
+
+
+function _M.capacity(self)
+    return self.size
 end
 
 
@@ -418,6 +429,7 @@ local function remove_key(self, key)
         -- In an attempt to make key and val dead.
         key_v[cur] = nil
         val_v[cur] = nil
+        self.num_items = self.num_items - 1
 
         -- Remove the node from the hash table
         local next_node = node_v[cur].conflict
@@ -447,6 +459,7 @@ local function insert_key(self, key, val, node)
     local bucket_v = self.bucket_v
     node.conflict = bucket_v[key_hash]
     bucket_v[key_hash] = node_id
+    self.num_items = self.num_items + 1
 end
 
 
