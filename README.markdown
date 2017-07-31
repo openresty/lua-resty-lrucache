@@ -16,6 +16,7 @@ Table of Contents
     * [get](#get)
     * [delete](#delete)
     * [count](#count)
+    * [capacity](#capacity)
     * [flush_all](#flush_all)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -195,6 +196,15 @@ items, if any.
 and greater than or equal to 0.
 
 This is a good way of telling of how much memory the cache is actually consuming.
+
+[Back to TOC](#table-of-contents)
+
+capacity
+--------
+`syntax: cap = cache:capacity()`
+
+Returns the maximum number of items this cache can hold. This is the same as
+the `size` parameter passed to [`cache:new`](#new) when the cache was created.
 
 [Back to TOC](#table-of-contents)
 

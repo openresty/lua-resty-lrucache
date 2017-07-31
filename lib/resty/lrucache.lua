@@ -152,6 +152,7 @@ function _M.new(size)
         key2node = {},
         node2key = {},
         num_items = 0,
+        max_items = size,
     }
     return setmetatable(self, mt)
 end
@@ -159,6 +160,11 @@ end
 
 function _M.count(self)
     return self.num_items
+end
+
+
+function _M.capacity(self)
+    return self.max_items
 end
 
 
