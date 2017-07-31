@@ -247,3 +247,52 @@ dog: 33
 
 --- no_error_log
 [error]
+
+
+
+=== TEST 7: count
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(2)
+
+            ngx.say("count: ", c:count())
+
+            c:set("dog", 32)
+            ngx.say("count: ", c:count())
+            c:set("dog", 33)
+
+            ngx.say("count: ", c:count())
+            c:set("cat", 33)
+
+            ngx.say("count: ", c:count())
+            c:set("pig", 33)
+
+            ngx.say("count: ", c:count())
+            c:delete("dog")
+
+            ngx.say("count: ", c:count())
+            c:delete("pig")
+
+            ngx.say("count: ", c:count())
+            c:delete("cat")
+
+            ngx.say("count: ", c:count())
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+count: 0
+count: 1
+count: 1
+count: 2
+count: 2
+count: 2
+count: 1
+count: 0
+
+--- no_error_log
+[error]

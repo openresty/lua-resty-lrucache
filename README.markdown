@@ -15,6 +15,7 @@ Table of Contents
     * [set](#set)
     * [get](#get)
     * [delete](#delete)
+    * [count](#count)
     * [flush_all](#flush_all)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -180,6 +181,20 @@ delete
 `syntax: cache:delete(key)`
 
 Removes an item specified by the key from the cache.
+
+[Back to TOC](#table-of-contents)
+
+count
+-----
+`syntax: count = cache:count()`
+
+Returns the number of items currently inside the cache, **including** expired
+items, if any.
+
+`count` is always less than or equal to `size` as passed to [`cache:new`](#new),
+and greater than or equal to 0.
+
+This is a good way of telling of how much memory the cache is actually consuming.
 
 [Back to TOC](#table-of-contents)
 
