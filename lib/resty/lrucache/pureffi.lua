@@ -363,6 +363,11 @@ function _M.count(self)
 end
 
 
+function _M.capacity(self)
+    return self.size
+end
+
+
 local function hash_string(self, str)
     local c_str = ffi_cast(c_str_t, str)
 

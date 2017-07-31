@@ -437,3 +437,24 @@ count: 0
 
 --- no_error_log
 [error]
+
+
+
+=== TEST 14: capacity
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua '
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(2)
+
+            ngx.say("capacity: ", c:capacity())
+        ';
+    }
+--- request
+    GET /t
+--- response_body
+capacity: 2
+
+--- no_error_log
+[error]
