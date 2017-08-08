@@ -113,7 +113,7 @@ end
 -- true module stuffs
 
 local _M = {
-    _VERSION = '0.06'
+    _VERSION = '0.07'
 }
 local mt = { __index = _M }
 
