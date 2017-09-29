@@ -161,7 +161,11 @@ function _M.get(self, key)
 end
 
 
-function _M.delete(self, key)
+function _M.delete(self, key, destructor)
+    if self.hasht[key] and destructor then
+        destructor(self.hasht[key])
+    end
+
     self.hasht[key] = nil
 
     local key2node = self.key2node
@@ -179,8 +183,8 @@ function _M.delete(self, key)
     return true
 end
 
-
-function _M.set(self, key, value, ttl)
+-- destructor is used to cleanup the old value
+function _M.set(self, key, value, ttl, destructor)
     local hasht = self.hasht
     hasht[key] = value
 
@@ -199,6 +203,10 @@ function _M.set(self, key, value, ttl)
             -- print(key, ": evicting oldkey: ", oldkey, ", oldnode: ",
             --         tostring(node))
             if oldkey then
+                if hasht[oldkey] and destructor then
+                    destructor(hasht[oldkey])
+                end
+                
                 hasht[oldkey] = nil
                 key2node[oldkey] = nil
             end
