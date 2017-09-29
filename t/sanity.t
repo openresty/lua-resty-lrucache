@@ -184,7 +184,7 @@ dog: nil32
 
             for i = 1, n do
                 c:set("dog" .. i, i)
-                c:delete("dog" .. i, i)
+                c:delete("dog" .. i)
                 c:set("dog" .. i, i)
                 local cnt = 0
                 for k, v in pairs(c.hasht) do
