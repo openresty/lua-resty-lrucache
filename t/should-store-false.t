@@ -14,11 +14,11 @@ my $pwd = cwd();
 
 our $HttpConfig = <<"_EOC_";
     lua_package_path "$pwd/lib/?.lua;$pwd/../lua-resty-core/lib/?.lua;;";
-    #init_by_lua '
+    #init_by_lua_block {
     #local v = require "jit.v"
     #v.on("$Test::Nginx::Util::ErrLogFile")
     #require "resty.core"
-    #';
+    #}
 
 _EOC_
 
@@ -31,7 +31,7 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache"
             local c = lrucache.new(2)
 
@@ -42,7 +42,7 @@ __DATA__
 
             c:delete("false-value")
             ngx.say("false-value: ", c:get("false-value"))
-        ';
+        }
     }
 --- request
     GET /t

@@ -14,11 +14,11 @@ my $pwd = cwd();
 
 our $HttpConfig = <<"_EOC_";
     lua_package_path "$pwd/lib/?.lua;$pwd/../lua-resty-core/lib/?.lua;;";
-    #init_by_lua '
+    #init_by_lua_block {
     #local v = require "jit.v"
     #v.on("$Test::Nginx::Util::ErrLogFile")
     #require "resty.core"
-    #';
+    #}
 
 _EOC_
 
@@ -31,7 +31,7 @@ __DATA__
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(2)
 
@@ -51,7 +51,7 @@ __DATA__
             c:delete("cat")
             ngx.say("dog: ", c:get("dog"))
             ngx.say("cat: ", c:get("cat"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -72,7 +72,7 @@ cat: nil
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(2)
             if not c then
@@ -89,7 +89,7 @@ cat: nil
             ngx.say("dog: ", c:get("dog"))
             ngx.say("cat: ", c:get("cat"))
             ngx.say("bird: ", c:get("bird"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -109,7 +109,7 @@ bird: 76
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(2)
             if not c then
@@ -126,7 +126,7 @@ bird: 76
             ngx.say("dog: ", c:get("dog"))
             ngx.say("cat: ", c:get("cat"))
             ngx.say("bird: ", c:get("bird"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -146,7 +146,7 @@ bird: 76
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
@@ -158,7 +158,7 @@ bird: 76
 
             ngx.sleep(0.31)
             ngx.say("dog: ", c:get("dog"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -176,12 +176,12 @@ dog: nil32
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1, 0.25)
 
             ngx.say(c.bucket_sz)
-        ';
+        }
     }
 --- request
     GET /t
@@ -197,12 +197,12 @@ dog: nil32
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(3, 0.05)
 
             ngx.say(c.bucket_sz)
-        ';
+        }
     }
 --- request
     GET /t
@@ -217,12 +217,12 @@ dog: nil32
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(3, 2.1)
 
             ngx.say(c.bucket_sz)
-        ';
+        }
     }
 --- request
     GET /t
@@ -237,7 +237,7 @@ dog: nil32
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local function log(...)
                 ngx.say(...)
             end
@@ -264,7 +264,7 @@ dog: nil32
             c:delete(tab2)
             log("tab1: ", c:get(tab1))
             log("tab2: ", c:get(tab2))
-        ';
+        }
     }
 --- request
     GET /t
@@ -285,7 +285,7 @@ tab2: nil
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
@@ -294,7 +294,7 @@ tab2: nil
 
             c:set("dog", 33)
             ngx.say("dog: ", c:get("dog"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -311,7 +311,7 @@ dog: 33
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
@@ -323,7 +323,7 @@ dog: 33
 
             ngx.sleep(0.4)
             ngx.say("dog: ", c:get("dog"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -341,7 +341,7 @@ dog: nil33
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
@@ -352,7 +352,7 @@ dog: nil33
 
             ngx.sleep(0.5)
             ngx.say("dog: ", c:get("dog"))
-        ';
+        }
     }
 --- request
     GET /t
@@ -369,7 +369,7 @@ dog: nil33
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(1)
 
@@ -379,7 +379,7 @@ dog: nil33
             c:set("dog", 33)
             ngx.sleep(0.2)
             ngx.say("dog: ", c:get("dog"))
-        ';
+        }
     }
 --- request
     GET /t
