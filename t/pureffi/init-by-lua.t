@@ -14,11 +14,11 @@ my $pwd = cwd();
 
 our $HttpConfig = <<"_EOC_";
     lua_package_path "$pwd/lib/?.lua;$pwd/../lua-resty-core/lib/?.lua;;";
-    #init_by_lua '
+    #init_by_lua_block {
     #local v = require "jit.v"
     #v.on("$Test::Nginx::Util::ErrLogFile")
     #require "resty.core"
-    #';
+    #}
 
 _EOC_
 
@@ -31,7 +31,7 @@ __DATA__
 --- http_config eval
 "$::HttpConfig"
 . qq!
-        init_by_lua '
+        init_by_lua_block {
             local function log(...)
                 ngx.log(ngx.WARN, ...)
             end
@@ -55,7 +55,7 @@ __DATA__
             c:delete("cat")
             log("dog: ", c:get("dog"))
             log("cat: ", c:get("cat"))
-        ';
+        }
 !
 
 --- config
@@ -82,7 +82,7 @@ cat: nil
 --- http_config eval
 "$::HttpConfig"
 . qq!
-init_by_lua '
+init_by_lua_block {
     lrucache = require "resty.lrucache.pureffi"
     flv_index, err = lrucache.new(200)
     if not flv_index then
@@ -103,7 +103,7 @@ init_by_lua '
     end
 
     ngx.log(ngx.WARN, "3 lrucache initialized.")
-';
+}
 !
 
 --- config
