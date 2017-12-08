@@ -238,12 +238,15 @@ function _M.set(self, key, value, ttl)
     end
 end
 
+
 function _M.flush_all(self)
     tb_clear(self.hasht)
     tb_clear(self.node2key)
     tb_clear(self.key2node)
+
     local cache_queue = self.cache_queue
     local free_queue = self.free_queue
+
     while not queue_is_empty(cache_queue) do
         local node = cache_queue[0].prev
         queue_remove(node)
