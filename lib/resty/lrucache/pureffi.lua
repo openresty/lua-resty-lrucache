@@ -531,4 +531,18 @@ function _M.set(self, key, value, ttl)
 end
 
 
+function _M.flush_all(self)
+    local cache_queue = self.cache_queue
+    local key_v = self.key_v
+
+    local node = queue_head(cache_queue)
+
+    while node ~= self.cache_queue do
+        local key = key_v[node.id]
+        node = node.next
+        _M.delete(self, key)
+    end
+end
+
+
 return _M
