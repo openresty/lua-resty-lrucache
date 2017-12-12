@@ -250,32 +250,35 @@ dog: 33
 
 
 
-=== TEST 7: flush value
+=== TEST 7: flush_all() deletes all keys
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache"
-            local c = lrucache.new(2)
+            local c = lrucache.new(100)
 
-            c:set("dog", 32)
-            ngx.say("dog: ", c:get("dog"))
+            local N = 3
 
-            c:set("cat", 33)
-            ngx.say("cat: ", c:get("cat"))
+            for i = 1, N do
+                c:set("key " .. i, true)
+            end
 
             c:flush_all()
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
-        ';
+
+            for i = 1, N do
+                local key = "key " .. i
+                local v = c:get(key)
+                ngx.say(key, ": ", v)
+            end
+        }
     }
 --- request
     GET /t
 --- response_body
-dog: 32
-cat: 33
-dog: nil
-cat: nil
+key 1: nil
+key 2: nil
+key 3: nil
 
 --- no_error_log
 [error]

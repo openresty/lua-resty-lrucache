@@ -11,9 +11,10 @@ local uintptr_t = ffi.typeof("uintptr_t")
 local setmetatable = setmetatable
 local tonumber = tonumber
 
+
 if string.find(jit.version, " 2.0") then
     ngx.log(ngx.ALERT, "use of lua-resty-lrucache with LuaJIT 2.0 is ",
-    "not recommended; use LuaJIT 2.1+ instead")
+                       "not recommended; use LuaJIT 2.1+ instead")
 end
 
 
@@ -253,5 +254,6 @@ function _M.flush_all(self)
         queue_insert_tail(free_queue, node)
     end
 end
+
 
 return _M
