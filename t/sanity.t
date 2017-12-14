@@ -282,3 +282,34 @@ key 3: nil
 
 --- no_error_log
 [error]
+
+
+
+=== TEST 8: flush_all() flush empty cache store
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(100)
+
+            local N = 3
+
+            c:flush_all()
+
+            for i = 1, N do
+                local key = "key " .. i
+                local v = c:get(key)
+                ngx.say(key, ": ", v)
+            end
+        }
+    }
+--- request
+    GET /t
+--- response_body
+key 1: nil
+key 2: nil
+key 3: nil
+
+--- no_error_log
+[error]
