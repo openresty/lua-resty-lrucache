@@ -126,9 +126,13 @@ local brshift = bit.rshift
 local bxor = bit.bxor
 local band = bit.band
 
-local ok, tab_new = pcall(require, "table.new")
-if not ok then
-    tab_new = function (narr, nrec) return {} end
+local new_tab
+do
+    local ok
+    ok, new_tab = pcall(require, "table.new")
+    if not ok then
+        new_tab = function(narr, nrec) return {} end
+    end
 end
 
 -- queue data types
@@ -339,8 +343,8 @@ function _M.new(size, load_factor)
         free_queue = queue_init(size),
         cache_queue = queue_init(0),
         node_v = nil,
-        key_v = tab_new(size, 0),
-        val_v = tab_new(size, 0),
+        key_v = new_tab(size, 0),
+        val_v = new_tab(size, 0),
         bucket_v = ffi_new(int_array_t, bucket_sz),
         num_items = 0,
     }
@@ -541,6 +545,37 @@ function _M.set(self, key, value, ttl)
     else
         node.expire = -1
     end
+end
+
+
+function _M.get_keys(self, max_count, res)
+    if not max_count or max_count == 0 then
+        max_count = self.num_items
+    end
+
+    if not res then
+        res = new_tab(max_count + 1, 0) -- + 1 for trailing hole
+    end
+
+    local cache_queue = self.cache_queue
+    local key_v = self.key_v
+
+    local i = 0
+    local node = queue_head(cache_queue)
+
+    while node ~= cache_queue do
+        if i >= max_count then
+            break
+        end
+
+        i = i + 1
+        res[i] = key_v[node.id]
+        node = node.next
+    end
+
+    res[i + 1] = nil
+
+    return res
 end
 
 
