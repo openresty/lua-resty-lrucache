@@ -17,6 +17,7 @@ Table of Contents
     * [delete](#delete)
     * [count](#count)
     * [capacity](#capacity)
+    * [get_keys](#get_keys)
     * [flush_all](#flush_all)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
@@ -205,6 +206,23 @@ capacity
 
 Returns the maximum number of items this cache can hold. This is the same as
 the `size` parameter passed to [`cache:new`](#new) when the cache was created.
+
+[Back to TOC](#table-of-contents)
+
+get_keys
+--------
+`syntax: keys = cache:get_keys(max_count?, res?)`
+
+Fetch the list of keys currently inside the cache up to `max_count`. The keys
+will be ordered in MRU fashion (Most Recently Used keys first).
+
+This function returns a Lua (array) table (with integer keys) containing the
+keys.
+
+When `max_count` is `nil` or `0`, all keys (if any) are returned.
+
+When provided with a `res` table, this function will feed the keys to it, and
+insert a trailing `nil` value before returning.
 
 [Back to TOC](#table-of-contents)
 

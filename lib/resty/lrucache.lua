@@ -10,6 +10,14 @@ local ngx_now = ngx.now
 local uintptr_t = ffi.typeof("uintptr_t")
 local setmetatable = setmetatable
 local tonumber = tonumber
+local new_tab
+do
+    local ok
+    ok, new_tab = pcall(require, "table.new")
+    if not ok then
+        new_tab = function(narr, nrec) return {} end
+    end
+end
 
 
 if string.find(jit.version, " 2.0", 1, true) then
@@ -253,6 +261,37 @@ function _M.set(self, key, value, ttl)
     else
         node.expire = -1
     end
+end
+
+
+function _M.get_keys(self, max_count, res)
+    if not max_count or max_count == 0 then
+        max_count = self.num_items
+    end
+
+    if not res then
+        res = new_tab(max_count, 0)
+    end
+
+    local cache_queue = self.cache_queue
+    local node2key = self.node2key
+
+    local i = 0
+    local node = queue_head(cache_queue)
+
+    while node ~= cache_queue do
+        if i >= max_count then
+            break
+        end
+
+        i = i + 1
+        res[i] = node2key[ptr2num(node)]
+        node = node.next
+    end
+
+    res[i + 1] = nil
+
+    return res
 end
 
 

@@ -544,6 +544,37 @@ function _M.set(self, key, value, ttl)
 end
 
 
+function _M.get_keys(self, max_count, res)
+    if not max_count or max_count == 0 then
+        max_count = self.num_items
+    end
+
+    if not res then
+        res = tab_new(max_count, 0)
+    end
+
+    local cache_queue = self.cache_queue
+    local key_v = self.key_v
+
+    local i = 0
+    local node = queue_head(cache_queue)
+
+    while node ~= cache_queue do
+        if i >= max_count then
+            break
+        end
+
+        i = i + 1
+        res[i] = key_v[node.id]
+        node = node.next
+    end
+
+    res[i + 1] = nil
+
+    return res
+end
+
+
 function _M.flush_all(self)
     local cache_queue = self.cache_queue
     local key_v = self.key_v
