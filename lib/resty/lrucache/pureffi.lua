@@ -537,7 +537,7 @@ function _M.flush_all(self)
 
     local node = queue_head(cache_queue)
 
-    while node ~= self.cache_queue do
+    while node ~= cache_queue do
         local key = key_v[node.id]
         node = node.next
         _M.delete(self, key)
