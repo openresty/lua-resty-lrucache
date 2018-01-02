@@ -251,7 +251,7 @@ function _M.flush_all(self)
     -- splice the cache_queue into free_queue
     if not queue_is_empty(cache_queue) then
         local free_first = free_queue[0]
-        local free_last = free_queue[0].prev
+        local free_last = free_first.prev
         local cache_first = cache_queue[0]
         local cache_last = cache_first.prev
 
@@ -260,6 +260,8 @@ function _M.flush_all(self)
 
         cache_last.next = free_queue
         free_first.prev = cache_last
+
+        self.cache_queue = queue_init()
     end
 end
 
