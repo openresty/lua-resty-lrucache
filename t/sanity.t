@@ -254,7 +254,7 @@ dog: 33
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache"
             local c = lrucache.new(2)
 
@@ -280,7 +280,7 @@ dog: 33
             c:delete("cat")
 
             ngx.say("count: ", c:count())
-        ';
+        }
     }
 --- request
     GET /t
@@ -303,12 +303,12 @@ count: 0
 --- http_config eval: $::HttpConfig
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local lrucache = require "resty.lrucache"
             local c = lrucache.new(2)
 
             ngx.say("capacity: ", c:capacity())
-        ';
+        }
     }
 --- request
     GET /t
