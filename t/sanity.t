@@ -247,3 +247,100 @@ dog: 33
 
 --- no_error_log
 [error]
+
+
+
+=== TEST 7: flush_all() deletes all keys
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(100)
+
+            local N = 3
+
+            for i = 1, N do
+                c:set("key " .. i, true)
+            end
+
+            c:flush_all()
+
+            for i = 1, N do
+                local key = "key " .. i
+                local v = c:get(key)
+                ngx.say(key, ": ", v)
+            end
+        }
+    }
+--- request
+    GET /t
+--- response_body
+key 1: nil
+key 2: nil
+key 3: nil
+
+--- no_error_log
+[error]
+
+
+
+=== TEST 8: flush_all() flush empty cache store
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(100)
+
+            local N = 3
+
+            c:flush_all()
+
+            for i = 1, N do
+                local key = "key " .. i
+                local v = c:get(key)
+                ngx.say(key, ": ", v)
+            end
+        }
+    }
+--- request
+    GET /t
+--- response_body
+key 1: nil
+key 2: nil
+key 3: nil
+
+--- no_error_log
+[error]
+
+
+
+=== TEST 9: flush_all() flush full cache store and allows subsequent reuse
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local N = 100
+
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(N)
+
+            for i = 1, N do
+                c:set("key " .. i, true)
+            end
+
+            c:flush_all()
+
+            c:set("new_key", true)
+
+            ngx.say("value set after flush_all: ", c:get("new_key"))
+        }
+    }
+--- request
+    GET /t
+--- response_body
+value set after flush_all: true
+
+--- no_error_log
+[error]
