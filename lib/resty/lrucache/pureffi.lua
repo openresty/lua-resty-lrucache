@@ -160,14 +160,16 @@ ffi.cdef[[
          * Intuitively, we can view the "id" as the identifier of key/value
          * pair.
          */
-        int                id;
+        int                        id;
 
         /* The bucket of the hash-table is implemented as a singly-linked list.
          * The "conflict" refers to the ID of the next node in the bucket.
          */
-        int                conflict;
+        int                        conflict;
 
-        double             expire;  /* in seconds */
+        uint32_t                   user_flags;
+
+        double                     expire;  /* in seconds */
 
         lrucache_pureffi_queue_t  *prev;
         lrucache_pureffi_queue_t  *next;
@@ -217,6 +219,7 @@ local function queue_init(size)
         for i = 1, size do
           local e = q[i]
           e.id = i
+          e.user_flags = 0
           prev.next = e
           e.prev = prev
           prev = e
@@ -486,10 +489,10 @@ function _M.get(self, key)
     local expire = node.expire
     if expire >= 0 and expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil, self.val_v[node_id]
+        return nil, self.val_v[node_id], node.user_flags
     end
 
-    return self.val_v[node_id]
+    return self.val_v[node_id], nil, node.user_flags
 end
 
 
@@ -510,7 +513,7 @@ function _M.delete(self, key)
 end
 
 
-function _M.set(self, key, value, ttl)
+function _M.set(self, key, value, ttl, flags)
     if type(key) ~= "string" then
         key = tostring(key)
     end
@@ -544,6 +547,13 @@ function _M.set(self, key, value, ttl)
         node.expire = ngx_now() + ttl
     else
         node.expire = -1
+    end
+
+    if type(flags) == "number" and flags >= 0 then
+        node.user_flags = flags
+
+    else
+        node.user_flags = 0
     end
 end
 

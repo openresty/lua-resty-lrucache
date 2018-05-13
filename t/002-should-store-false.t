@@ -21,10 +21,10 @@ __DATA__
             collectgarbage()
 
             c:set("false-value", false)
-            ngx.say("false-value: ", c:get("false-value"))
+            ngx.say("false-value: ", (c:get("false-value")))
 
             c:delete("false-value")
-            ngx.say("false-value: ", c:get("false-value"))
+            ngx.say("false-value: ", (c:get("false-value")))
         ';
     }
 --- response_body

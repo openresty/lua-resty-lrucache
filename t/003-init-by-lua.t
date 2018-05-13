@@ -27,18 +27,18 @@ __DATA__
 
         c:set("dog", 32)
         c:set("cat", 56)
-        log("dog: ", c:get("dog"))
-        log("cat: ", c:get("cat"))
+        log("dog: ", (c:get("dog")))
+        log("cat: ", (c:get("cat")))
 
         c:set("dog", 32)
         c:set("cat", 56)
-        log("dog: ", c:get("dog"))
-        log("cat: ", c:get("cat"))
+        log("dog: ", (c:get("dog")))
+        log("cat: ", (c:get("cat")))
 
         c:delete("dog")
         c:delete("cat")
-        log("dog: ", c:get("dog"))
-        log("cat: ", c:get("cat"))
+        log("dog: ", (c:get("dog")))
+        log("cat: ", (c:get("cat")))
     ';
 !
 --- config
