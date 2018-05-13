@@ -171,7 +171,7 @@ clamped to `0.1`). This argument is only meaningful for
 
 set
 ---
-`syntax: cache:set(key, value, ttl)`
+`syntax: cache:set(key, value, ttl, flags?)`
 
 Sets a key with a value and an expiration time.
 
@@ -182,17 +182,27 @@ argument means the value would never expire (which is the default).
 When the cache is full, the cache will automatically evict the least recently
 used item.
 
+The optional `flags` argument specifies a user flags value associated with the
+item to be stored. It can be retrieved later with the item. The user flags are
+stored as an unsigned 32-bit integer internally, and thus must be specified as
+a Lua number. If not specified, flags will have a default value of `0`. This
+argument was added in the `v0.10` release.
+
 [Back to TOC](#table-of-contents)
 
 get
 ---
-`syntax: data, stale_data = cache:get(key)`
+`syntax: data, stale_data, flags = cache:get(key)`
 
 Fetches a value with the key. If the key does not exist in the cache or has
 already expired, `nil` will be returned.
 
 Starting from `v0.03`, the stale data is also returned as the second return
 value if available.
+
+Starting from `v0.10`, the user flags value associated with the stored item is
+also returned as the third return value. If no user flags were given to an
+item, its default flags will be `0`.
 
 [Back to TOC](#table-of-contents)
 

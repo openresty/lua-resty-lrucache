@@ -22,18 +22,18 @@ __DATA__
 
             c:set("dog", 32)
             c:set("cat", 56)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
 
             c:set("dog", 32)
             c:set("cat", 56)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
 
             c:delete("dog")
             c:delete("cat")
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
         ';
     }
 --- response_body
@@ -59,13 +59,13 @@ cat: nil
 
             c:set("dog", 32)
             c:set("cat", 56)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
 
             c:set("bird", 76)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
-            ngx.say("bird: ", c:get("bird"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
+            ngx.say("bird: ", (c:get("bird")))
         ';
     }
 --- response_body
@@ -90,13 +90,13 @@ bird: 76
 
             c:set("cat", 56)
             c:set("dog", 32)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
 
             c:set("bird", 76)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
-            ngx.say("bird: ", c:get("bird"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
+            ngx.say("bird: ", (c:get("bird")))
         ';
     }
 --- response_body
@@ -116,19 +116,20 @@ bird: 76
             local c = lrucache.new(1)
 
             c:set("dog", 32, 0.6)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             ngx.sleep(0.3)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             ngx.sleep(0.31)
-            ngx.say("dog: ", c:get("dog"))
+            local v, err = c:get("dog")
+            ngx.say("dog: ", v, " ", err)
         ';
     }
 --- response_body
 dog: 32
 dog: 32
-dog: nil32
+dog: nil 32
 
 
 
@@ -195,18 +196,18 @@ dog: nil32
 
             c:set(tab1, 32)
             c:set(tab2, 56)
-            log("tab1: ", c:get(tab1))
-            log("tab2: ", c:get(tab2))
+            log("tab1: ", (c:get(tab1)))
+            log("tab2: ", (c:get(tab2)))
 
             c:set(tab1, 32)
             c:set(tab2, 56)
-            log("tab1: ", c:get(tab1))
-            log("tab2: ", c:get(tab2))
+            log("tab1: ", (c:get(tab1)))
+            log("tab2: ", (c:get(tab2)))
 
             c:delete(tab1)
             c:delete(tab2)
-            log("tab1: ", c:get(tab1))
-            log("tab2: ", c:get(tab2))
+            log("tab1: ", (c:get(tab1)))
+            log("tab2: ", (c:get(tab2)))
         ';
     }
 --- response_body
@@ -227,10 +228,10 @@ tab2: nil
             local c = lrucache.new(1)
 
             c:set("dog", 32)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             c:set("dog", 33)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
         ';
     }
 --- response_body
@@ -247,19 +248,20 @@ dog: 33
             local c = lrucache.new(1)
 
             c:set("dog", 32, 1.0)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             c:set("dog", 33, 0.3)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             ngx.sleep(0.4)
-            ngx.say("dog: ", c:get("dog"))
+            local v, err = c:get("dog")
+            ngx.say("dog: ", v, " ", err)
         ';
     }
 --- response_body
 dog: 32
 dog: 33
-dog: nil33
+dog: nil 33
 
 
 
@@ -273,15 +275,16 @@ dog: nil33
             c:set("dog", 32, 1.2)
             c:set("dog", 33, 0.6)
             ngx.sleep(0.2)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
 
             ngx.sleep(0.5)
-            ngx.say("dog: ", c:get("dog"))
+            local v, err = c:get("dog")
+            ngx.say("dog: ", v, " ", err)
         ';
     }
 --- response_body
 dog: 33
-dog: nil33
+dog: nil 33
 
 
 
@@ -297,7 +300,7 @@ dog: nil33
 
             c:set("dog", 33)
             ngx.sleep(0.2)
-            ngx.say("dog: ", c:get("dog"))
+            ngx.say("dog: ", (c:get("dog")))
         ';
     }
 --- response_body

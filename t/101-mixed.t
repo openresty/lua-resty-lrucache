@@ -22,23 +22,23 @@ __DATA__
 
             c:set("dog", 32)
             c:set("cat", 56)
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
 
             local lrucache = require "resty.lrucache.pureffi"
             local c2 = lrucache.new(2)
 
-            ngx.say("dog: ", c2:get("dog"))
-            ngx.say("cat: ", c2:get("cat"))
+            ngx.say("dog: ", (c2:get("dog")))
+            ngx.say("cat: ", (c2:get("cat")))
 
             c2:set("dog", 9)
             c2:set("cat", "hi")
 
-            ngx.say("dog: ", c2:get("dog"))
-            ngx.say("cat: ", c2:get("cat"))
+            ngx.say("dog: ", (c2:get("dog")))
+            ngx.say("cat: ", (c2:get("cat")))
 
-            ngx.say("dog: ", c:get("dog"))
-            ngx.say("cat: ", c:get("cat"))
+            ngx.say("dog: ", (c:get("dog")))
+            ngx.say("cat: ", (c:get("cat")))
         ';
     }
 --- response_body

@@ -40,7 +40,7 @@ __DATA__
             end
 
             for i = 1, N + 1 do
-                ngx.say(i, ": ", c:get("key " .. i))
+                ngx.say(i, ": ", (c:get("key " .. i)))
             end
         }
     }
@@ -87,7 +87,7 @@ __DATA__
             end
 
             for i = 1, N + 1 do
-                ngx.say(i, ": ", c:get("key " .. i))
+                ngx.say(i, ": ", (c:get("key " .. i)))
             end
         }
     }
@@ -131,7 +131,7 @@ __DATA__
             end
 
             for i = 1, N + 1 do
-                ngx.say(i, ": ", c:get("key " .. i))
+                ngx.say(i, ": ", (c:get("key " .. i)))
             end
         }
     }

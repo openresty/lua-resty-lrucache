@@ -10,6 +10,7 @@ local ngx_now = ngx.now
 local uintptr_t = ffi.typeof("uintptr_t")
 local setmetatable = setmetatable
 local tonumber = tonumber
+local type = type
 local new_tab
 do
     local ok
@@ -50,6 +51,7 @@ ffi.cdef[[
         double             expire;  /* in seconds */
         lrucache_queue_t  *prev;
         lrucache_queue_t  *next;
+        uint32_t           user_flags;
     };
 ]]
 
@@ -84,6 +86,7 @@ local function queue_init(size)
         local prev = q[0]
         for i = 1, size do
           local e = q + i
+          e.user_flags = 0
           prev.next = e
           e.prev = prev
           prev = e
@@ -192,9 +195,10 @@ function _M.get(self, key)
 
     if node.expire >= 0 and node.expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil, val
+        return nil, val, node.user_flags
     end
-    return val
+
+    return val, nil, node.user_flags
 end
 
 
@@ -218,7 +222,7 @@ function _M.delete(self, key)
 end
 
 
-function _M.set(self, key, value, ttl)
+function _M.set(self, key, value, ttl, flags)
     local hasht = self.hasht
     hasht[key] = value
 
@@ -260,6 +264,13 @@ function _M.set(self, key, value, ttl)
         node.expire = ngx_now() + ttl
     else
         node.expire = -1
+    end
+
+    if type(flags) == "number" and flags >= 0 then
+        node.user_flags = flags
+
+    else
+        node.user_flags = 0
     end
 end
 
