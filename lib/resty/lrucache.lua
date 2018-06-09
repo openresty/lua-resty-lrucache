@@ -20,6 +20,7 @@ end
 
 local ok, tb_clear = pcall(require, "table.clear")
 if not ok then
+    local pairs = pairs
     tb_clear = function (tab)
         for k, _ in pairs(tab) do
             tab[k] = nil
