@@ -197,6 +197,8 @@ and greater than or equal to 0.
 
 This is a good way of telling of how much memory the cache is actually consuming.
 
+This method was added in the `v0.10` release.
+
 [Back to TOC](#table-of-contents)
 
 capacity
@@ -205,6 +207,8 @@ capacity
 
 Returns the maximum number of items this cache can hold. This is the same as
 the `size` parameter passed to [`cache:new`](#new) when the cache was created.
+
+This method was added in the `v0.10` release.
 
 [Back to TOC](#table-of-contents)
 
