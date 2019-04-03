@@ -201,7 +201,7 @@ This is a good way of telling of how much memory the cache is actually consuming
 
 capacity
 --------
-`syntax: cap = cache:capacity()`
+`syntax: size = cache:capacity()`
 
 Returns the maximum number of items this cache can hold. This is the same as
 the `size` parameter passed to [`cache:new`](#new) when the cache was created.
