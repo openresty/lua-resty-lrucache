@@ -187,9 +187,12 @@ flush_all
 ---------
 `syntax: cache:flush_all()`
 
-Flushes all the existing data (if any) in the current cache instance. This is an `O(1)` operation and should be much faster than create a brand new cache instance.
+Flushes all the existing data (if any) in the current cache instance. This is
+an `O(1)` operation and should be much faster than creating a brand new cache
+instance.
 
-Note: the `flush_all()` method of `resty.lrucache.pureffi` is an `O(n)` operation though.
+Note however that the `flush_all()` method of `resty.lrucache.pureffi` is an
+`O(n)` operation.
 
 [Back to TOC](#table-of-contents)
 
