@@ -174,7 +174,7 @@ function _M.get(self, key)
         -- print("expired: ", node.expire, " > ", ngx_now())
         return nil, val
     end
-    return val
+    return val, node.expire - ngx.now()
 end
 
 
