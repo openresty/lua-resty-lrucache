@@ -127,6 +127,43 @@ local function queue_head(h)
 end
 
 
+local function ptr2num(ptr)
+    return tonumber(ffi_cast(uintptr_t, ptr))
+end
+
+local function handle_lru(self, key)
+    local key2node = self.key2node
+    local node = key2node[key]
+    if not node then
+        local free_queue = self.free_queue
+        local node2key = self.node2key
+
+        if queue_is_empty(free_queue) then
+            -- evict the least recently used key
+            -- assert(not queue_is_empty(self.cache_queue))
+            node = queue_last(self.cache_queue)
+
+            local oldkey = node2key[ptr2num(node)]
+            -- print(key, ": evicting oldkey: ", oldkey, ", oldnode: ",
+            --         tostring(node))
+            if oldkey then
+                self.hasht[oldkey] = nil
+                key2node[oldkey] = nil
+            end
+
+        else
+            -- take a free queue node
+            node = queue_head(free_queue)
+            -- print(key, ": get a new free node: ", tostring(node))
+        end
+
+        node2key[ptr2num(node)] = key
+        key2node[key] = node
+    end
+
+    return node
+end
+
 -- true module stuffs
 
 local _M = {
@@ -135,17 +172,13 @@ local _M = {
 local mt = { __index = _M }
 
 
-local function ptr2num(ptr)
-    return tonumber(ffi_cast(uintptr_t, ptr))
-end
-
-
 function _M.new(size)
     if size < 1 then
         return nil, "size too small"
     end
 
     local self = {
+        keys = {},
         hasht = {},
         free_queue = queue_init(size),
         cache_queue = queue_init(),
@@ -164,16 +197,15 @@ function _M.get(self, key)
     end
 
     local node = self.key2node[key]
+    if node.expire >= 0 and node.expire < ngx_now() then
+        return nil, val
+    end
 
     -- print(key, ": moving node ", tostring(node), " to cache queue head")
     local cache_queue = self.cache_queue
     queue_remove(node)
     queue_insert_head(cache_queue, node)
 
-    if node.expire >= 0 and node.expire < ngx_now() then
-        -- print("expired: ", node.expire, " > ", ngx_now())
-        return nil, val
-    end
     return val
 end
 
@@ -196,40 +228,11 @@ function _M.delete(self, key)
     return true
 end
 
-
 function _M.set(self, key, value, ttl)
     local hasht = self.hasht
     hasht[key] = value
 
-    local key2node = self.key2node
-    local node = key2node[key]
-    if not node then
-        local free_queue = self.free_queue
-        local node2key = self.node2key
-
-        if queue_is_empty(free_queue) then
-            -- evict the least recently used key
-            -- assert(not queue_is_empty(self.cache_queue))
-            node = queue_last(self.cache_queue)
-
-            local oldkey = node2key[ptr2num(node)]
-            -- print(key, ": evicting oldkey: ", oldkey, ", oldnode: ",
-            --         tostring(node))
-            if oldkey then
-                hasht[oldkey] = nil
-                key2node[oldkey] = nil
-            end
-
-        else
-            -- take a free queue node
-            node = queue_head(free_queue)
-            -- print(key, ": get a new free node: ", tostring(node))
-        end
-
-        node2key[ptr2num(node)] = key
-        key2node[key] = node
-    end
-
+    local node = handle_lru(self,key)
     queue_remove(node)
     queue_insert_head(self.cache_queue, node)
 
@@ -240,6 +243,64 @@ function _M.set(self, key, value, ttl)
     end
 end
 
+function _M.incr(self, key, ttl, by)
+    local hasht = self.hasht
+    local value = hasht[key]
+    if value == nil then
+        return
+    end
+
+    local node = handle_lru(self,key)
+    if node.expire >= 0 and node.expire < ngx_now() then
+        return nil
+    end
+
+    value = value + by
+    hasht[key] = value
+
+    queue_remove(node)
+    queue_insert_head(self.cache_queue, node)
+
+    if ttl then
+        node.expire = ngx_now() + ttl
+    else
+        node.expire = -1
+    end
+    return value;
+end
+
+function _M.cleanup(self, n)
+    n = n or 0
+    local key2node = self.key2node
+    local node2key = self.node2key
+    local cachequeue = self.cache_queue
+    local now = ngx_now()
+    local node = queue_last(cachequeue)
+    while node ~= cachequeue do
+        local expire = node.expire
+        if expire >= 0 and expire <= now then
+            local next = node.next
+
+            local ptr = ptr2num(node)
+            local key = node2key[ptr]
+
+            self.hasht[key] = nil
+            key2node[key] = nil
+            self.node2key[ptr] = nil
+
+            queue_remove(node)
+            queue_insert_tail(self.free_queue, node)
+
+            node = next.prev
+        else
+            node = node.prev
+        end
+        n = n - 1
+        if n == 0 then
+            return
+        end
+    end
+end
 
 function _M.flush_all(self)
     tb_clear(self.hasht)
