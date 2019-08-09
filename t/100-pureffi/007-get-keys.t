@@ -1,17 +1,10 @@
 # vim:set ft= ts=4 sw=4 et fdm=marker:
-
-use Test::Nginx::Socket::Lua;
-use Cwd qw(cwd);
+use lib '.';
+use t::TestLRUCache;
 
 repeat_each(2);
 
 plan tests => repeat_each() * (blocks() * 3);
-
-my $pwd = cwd();
-
-our $HttpConfig = <<"_EOC_";
-    lua_package_path "$pwd/lib/?.lua;;";
-_EOC_
 
 no_long_string();
 run_tests();
@@ -19,11 +12,10 @@ run_tests();
 __DATA__
 
 === TEST 1: get_keys() with some keys
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(100)
 
             c:set("hello", true)
@@ -38,23 +30,18 @@ __DATA__
             end
         }
     }
---- request
-GET /t
 --- response_body
 size: 2
 world
 hello
---- no_error_log
-[error]
 
 
 
 === TEST 2: get_keys() with no keys
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(100)
 
             local keys = c:get_keys()
@@ -66,21 +53,16 @@ hello
             end
         }
     }
---- request
-GET /t
 --- response_body
 size: 0
---- no_error_log
-[error]
 
 
 
 === TEST 3: get_keys() with full cache
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(100)
 
             for i = 1, 100 do
@@ -96,23 +78,18 @@ size: 0
             ngx.say("LRU: ", keys[#keys])
         }
     }
---- request
-GET /t
 --- response_body
 size: 100
 MRU: extra-key
 LRU: key-2
---- no_error_log
-[error]
 
 
 
 === TEST 4: get_keys() max_count = 5
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(100)
 
             for i = 1, 100 do
@@ -126,23 +103,18 @@ LRU: key-2
             ngx.say("latest: ", keys[#keys])
         }
     }
---- request
-GET /t
 --- response_body
 size: 5
 MRU: key-100
 latest: key-96
---- no_error_log
-[error]
 
 
 
 === TEST 5: get_keys() max_count = 0 disables max returns
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c = lrucache.new(100)
 
             for i = 1, 100 do
@@ -156,23 +128,18 @@ latest: key-96
             ngx.say("LRU: ", keys[#keys])
         }
     }
---- request
-GET /t
 --- response_body
 size: 100
 MRU: key-100
 LRU: key-1
---- no_error_log
-[error]
 
 
 
 === TEST 6: get_keys() user-fed res table
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c1 = lrucache.new(3)
             local c2 = lrucache.new(2)
 
@@ -202,8 +169,6 @@ LRU: key-1
             end
         }
     }
---- request
-GET /t
 --- response_body
 res is user-fed: true
 c1-3
@@ -211,17 +176,14 @@ c1-2
 c1-1
 c2-2
 c2-1
---- no_error_log
-[error]
 
 
 
 === TEST 7: get_keys() user-fed res table + max_count
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c1 = lrucache.new(3)
 
             for i = 1, 3 do
@@ -237,22 +199,17 @@ c2-1
             end
         }
     }
---- request
-GET /t
 --- response_body
 key-3
 key-2
---- no_error_log
-[error]
 
 
 
 === TEST 8: get_keys() user-fed res table gets a trailing hole
---- http_config eval: $::HttpConfig
 --- config
     location = /t {
         content_by_lua_block {
-            local lrucache = require "resty.lrucache"
+            local lrucache = require "resty.lrucache.pureffi"
             local c1 = lrucache.new(3)
 
             for i = 1, 3 do
@@ -272,10 +229,6 @@ key-2
             end
         }
     }
---- request
-GET /t
 --- response_body
 key-3
 key-2
---- no_error_log
-[error]
