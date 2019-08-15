@@ -171,16 +171,16 @@ clamped to `0.1`). This argument is only meaningful for
 
 set
 ---
-`syntax: cache:set(key, value, ttl, flags?)`
+`syntax: cache:set(key, value, ttl?, flags?)`
 
 Sets a key with a value and an expiration time.
 
-The `ttl` argument specifies the expiration time. The time value is in seconds,
-but you can also specify the fraction number part (e.g. `0.25`). A nil `ttl`
-argument means the value would never expire (which is the default).
-
 When the cache is full, the cache will automatically evict the least recently
 used item.
+
+The optional `ttl` argument specifies the expiration time. The time value is in
+seconds, but you can also specify the fraction number part (e.g. `0.25`). A nil
+`ttl` argument means the value would never expire (which is the default).
 
 The optional `flags` argument specifies a user flags value associated with the
 item to be stored. It can be retrieved later with the item. The user flags are
