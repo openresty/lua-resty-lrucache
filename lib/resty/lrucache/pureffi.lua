@@ -318,7 +318,7 @@ local mt = { __index = _M }
 -- load-factor is specified, it will be clamped to the range of [0.1, 1](i.e.
 -- if load-factor is greater than 1, it will be saturated to 1, likewise,
 -- if load-factor is smaller than 0.1, it will be clamped to 0.1).
-function _M.new(size, load_factor)
+function _M.new(size, load_factor, evict_cb)
     if size < 1 then
         return nil, "size too small"
     end
@@ -350,6 +350,7 @@ function _M.new(size, load_factor)
         val_v = new_tab(size, 0),
         bucket_v = ffi_new(int_array_t, bucket_sz),
         num_items = 0,
+        evict_cb = evict_cb,
     }
     -- "note_v" is an array of all the nodes used in the LRU queue. Exprpession
     -- node_v[i] evaluates to the element of ID "i".
@@ -526,6 +527,9 @@ function _M.set(self, key, value, ttl, flags)
             -- evict the least recently used key
             -- assert(not queue_is_empty(self.cache_queue))
             node = queue_last(self.cache_queue)
+            if self.evict_cb then
+                self.evict_cb(self.key_v[node.id], self.val_v[node.id])
+            end
             remove_key(self, self.key_v[node.id])
         else
             -- take a free queue node

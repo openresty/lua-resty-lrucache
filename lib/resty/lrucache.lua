@@ -151,7 +151,7 @@ local function ptr2num(ptr)
 end
 
 
-function _M.new(size)
+function _M.new(size, evict_cb)
     if size < 1 then
         return nil, "size too small"
     end
@@ -164,6 +164,7 @@ function _M.new(size)
         node2key = {},
         num_items = 0,
         max_items = size,
+        evict_cb = evict_cb,
     }
     return setmetatable(self, mt)
 end
@@ -241,6 +242,9 @@ function _M.set(self, key, value, ttl, flags)
             -- print(key, ": evicting oldkey: ", oldkey, ", oldnode: ",
             --         tostring(node))
             if oldkey then
+                if self.evict_cb then
+                    self.evict_cb(oldkey, hasht[oldkey])
+                end
                 hasht[oldkey] = nil
                 key2node[oldkey] = nil
             end
