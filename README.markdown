@@ -6,28 +6,29 @@ lua-resty-lrucache - Lua-land LRU cache based on the LuaJIT FFI.
 Table of Contents
 =================
 
-* [Name](#name)
-* [Status](#status)
-* [Synopsis](#synopsis)
-* [Description](#description)
-* [Methods](#methods)
-    * [new](#new)
-    * [set](#set)
-    * [get](#get)
-    * [delete](#delete)
-    * [count](#count)
-    * [capacity](#capacity)
-    * [get_keys](#get_keys)
-    * [flush_all](#flush_all)
-* [Prerequisites](#prerequisites)
-* [Installation](#installation)
-* [Community](#community)
-    * [English Mailing List](#english-mailing-list)
-    * [Chinese Mailing List](#chinese-mailing-list)
-* [Bugs and Patches](#bugs-and-patches)
-* [Author](#author)
-* [Copyright and License](#copyright-and-license)
-* [See Also](#see-also)
+1. [Name](#name)
+2. [Table of Contents](#table-of-contents)
+3. [Status](#status)
+4. [Synopsis](#synopsis)
+5. [Description](#description)
+6. [Methods](#methods)
+   1. [new](#new)
+   2. [set](#set)
+   3. [get](#get)
+   4. [delete](#delete)
+   5. [count](#count)
+   6. [capacity](#capacity)
+   7. [get_keys](#get_keys)
+   8. [flush_all](#flush_all)
+7. [Prerequisites](#prerequisites)
+8. [Installation](#installation)
+9. [Community](#community)
+   1. [English Mailing List](#english-mailing-list)
+   2. [Chinese Mailing List](#chinese-mailing-list)
+10. [Bugs and Patches](#bugs-and-patches)
+11. [Author](#author)
+12. [Copyright and License](#copyright-and-license)
+13. [See Also](#see-also)
 
 Status
 ======
@@ -45,9 +46,14 @@ local _M = {}
 -- alternatively: local lrucache = require "resty.lrucache.pureffi"
 local lrucache = require "resty.lrucache"
 
+local function call_back(key, value)
+    ngx.log(ngx.ERR, "evict:", key, ":", value)
+end
+
 -- we need to initialize the cache on the lua module level so that
 -- it can be shared by all the requests served by each nginx worker process:
-local c, err = lrucache.new(200)  -- allow up to 200 items in the cache
+local c, err = lrucache.new(2, call_back)  -- allow up to 2 items in the cache
+-- local c, err = lrucache.new(2, nil, call_back)  -- for `resty.lrucache.pureffi`
 if not c then
     error("failed to create the cache: " .. (err or "unknown"))
 end
@@ -60,6 +66,12 @@ function _M.go()
 
     c:set("dog", { age = 10 }, 0.1)  -- expire in 0.1 sec
     c:delete("dog")
+
+    c:set("dog", 32)
+    c:set("parrto", 12) -- in log "evict:cat:56"
+    c:set("cat", 56, 0.1)  -- in log "evict:dog:32"
+    ngx.sleep(1)
+    ngx.say("cat:", c:get("cat")) -- in log "evict:cat:56"
 
     c:flush_all()  -- flush all the cached data
 end
@@ -151,7 +163,9 @@ local lrucache = require "resty.lrucache.pureffi"
 
 new
 ---
-`syntax: cache, err = lrucache.new(max_items [, load_factor])`
+`syntax: cache, err = lrucache.new(max_items [, evict_cb])`
+
+`syntax: cache, err = lrucache.new(max_items [, load_factor, evict_cb])`
 
 Creates a new cache instance. Upon failure, returns `nil` and a string
 describing the error.
@@ -166,6 +180,11 @@ range of `[0.1, 1]` (i.e. if load factor is greater than 1, it will be
 saturated to 1; likewise, if load-factor is smaller than `0.1`, it will be
 clamped to `0.1`). This argument is only meaningful for
 `resty.lrucache.pureffi`.
+
+The `evict_cb` argument specifies the item's destory call back. When use `set`
+add new item or `get`(item with ttl), may trigger remove old item, with this
+call back you can do some clean up job. The `evict_cb` will receive two param:
+key and value.
 
 [Back to TOC](#table-of-contents)
 

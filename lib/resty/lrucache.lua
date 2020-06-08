@@ -196,6 +196,9 @@ function _M.get(self, key)
 
     if node.expire >= 0 and node.expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
+        if self.evict_cb then
+            pcall(self.evict_cb, key, val)
+        end
         return nil, val, node.user_flags
     end
 
@@ -243,7 +246,7 @@ function _M.set(self, key, value, ttl, flags)
             --         tostring(node))
             if oldkey then
                 if self.evict_cb then
-                    self.evict_cb(oldkey, hasht[oldkey])
+                    pcall(self.evict_cb, oldkey, hasht[oldkey])
                 end
                 hasht[oldkey] = nil
                 key2node[oldkey] = nil

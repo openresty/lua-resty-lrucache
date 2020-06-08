@@ -14,7 +14,7 @@ __DATA__
 === TEST 1: evict with call back
 --- config
     location = /t {
-        content_by_lua '
+        content_by_lua_block {
             local function evict_cb(k,v)
                 ngx.say(k, v)
             end
@@ -25,7 +25,29 @@ __DATA__
 
             c:set("dog", 12)
             c:set("cat", 14)
-        ';
+        }
+    }
+--- response_body
+dog12
+
+
+
+=== TEST 2: evict with call back, ttl
+--- config
+    location = /t {
+        content_by_lua_block {
+            local function evict_cb(k,v)
+                ngx.say(k, v)
+            end
+            local lrucache = require "resty.lrucache"
+            local c = lrucache.new(1, evict_cb)
+
+            collectgarbage()
+
+            c:set("dog", 12, 0.1)
+            ngx.sleep(1)
+            c:get("dog")
+        }
     }
 --- response_body
 dog12
