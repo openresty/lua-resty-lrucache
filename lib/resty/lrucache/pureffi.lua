@@ -491,7 +491,10 @@ function _M.get(self, key)
     if expire >= 0 and expire < ngx_now() then
         -- print("expired: ", node.expire, " > ", ngx_now())
         if self.evict_cb then
-            pcall(self.evict_cb, key, self.val_v[node_id])
+            local ok, err = pcall(self.evict_cb, key, self.val_v[node_id])
+            if not ok then
+                ngx.log(ngx.ERR, "evict expire key:", key, " fail:", err)
+            end
         end
         return nil, self.val_v[node_id], node.user_flags
     end
@@ -531,7 +534,10 @@ function _M.set(self, key, value, ttl, flags)
             -- assert(not queue_is_empty(self.cache_queue))
             node = queue_last(self.cache_queue)
             if self.evict_cb then
-                pcall(self.evict_cb, self.key_v[node.id], self.val_v[node.id])
+                local ok, err = pcall(self.evict_cb, self.key_v[node.id], self.val_v[node.id])
+                if not ok then
+                    ngx.log(ngx.ERR, "evict old key:", self.key_v[node.id], " fail:", err)
+                end
             end
             remove_key(self, self.key_v[node.id])
         else
