@@ -323,6 +323,10 @@ function _M.new(size, load_factor, evict_cb)
         return nil, "size too small"
     end
 
+    if type(evict_cb) ~= "function" then
+        return nil, "evict_cb type error"
+    end
+
     -- Determine bucket size, which must be power of two.
     local load_f = load_factor
     if not load_factor then

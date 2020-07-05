@@ -156,6 +156,10 @@ function _M.new(size, evict_cb)
         return nil, "size too small"
     end
 
+    if type(evict_cb) ~= "function" then
+        return nil, "evict_cb type error"
+    end
+
     local self = {
         hasht = {},
         free_queue = queue_init(size),
