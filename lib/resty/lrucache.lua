@@ -156,7 +156,7 @@ function _M.new(size, evict_cb)
         return nil, "size too small"
     end
 
-    if type(evict_cb) ~= "function" then
+    if evict_cb and type(evict_cb) ~= "function" then
         return nil, "evict_cb type error"
     end
 
