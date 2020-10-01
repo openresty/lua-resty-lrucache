@@ -30,7 +30,7 @@ install:
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
   - git clone https://github.com/openresty/lua-nginx-module.git ../lua-nginx-module
   - git clone https://github.com/openresty/lua-resty-core.git ../lua-resty-core
-  - git clone -b 1.19.3.x https://github.com/xiaocang/no-pool-nginx.git ../no-pool-nginx
+  - git clone https://github.com/openresty/no-pool-nginx.git ../no-pool-nginx
   - git clone -b v2.1-agentzh https://github.com/openresty/luajit2.git
   - pushd luajit2/
   - make -j$JOBS CCDEBUG=-g Q= PREFIX=$LUAJIT_PREFIX CC=$CC XCFLAGS='-DLUA_USE_APICHECK -DLUA_USE_ASSERT' > build.log 2>&1 || (cat build.log && exit 1)
