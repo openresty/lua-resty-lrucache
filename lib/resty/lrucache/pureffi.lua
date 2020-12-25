@@ -351,7 +351,7 @@ function _M.new(size, load_factor)
         bucket_v = ffi_new(int_array_t, bucket_sz),
         num_items = 0,
     }
-    -- "note_v" is an array of all the nodes used in the LRU queue. Exprpession
+    -- "node_v" is an array of all the nodes used in the LRU queue. Exprpession
     -- node_v[i] evaluates to the element of ID "i".
     self.node_v = self.free_queue
 
