@@ -72,7 +72,9 @@ __DATA__
                 c:set("key " .. i, i)
             end
 
+            ngx.say(c:count())
             c:flush_all()
+            ngx.say(c:count())
 
             for i = 1, N + 1 do
                 local key = "key " .. i
@@ -92,6 +94,8 @@ __DATA__
         }
     }
 --- response_body
+4
+0
 1: nil
 2: nil
 3: nil
