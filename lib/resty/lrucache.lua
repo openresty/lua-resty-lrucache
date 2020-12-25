@@ -201,6 +201,32 @@ function _M.get(self, key)
     return val, nil, node.user_flags
 end
 
+function _M.peek(self, key)
+    local hasht = self.hasht
+    local val = hasht[key]
+    if val == nil then
+        return nil
+    end
+
+    local node = self.key2node[key]
+
+    return val, node.expire, node.user_flags
+end
+
+function _M.delete_oldest(self)
+    local node = queue_last(self.cache_queue)
+    if node == nil then
+        return nil, false
+    end
+
+    local key = self.node2key[ptr2num(node)]
+    if key ~= nil then
+        self:delete(key)
+        return key, true
+    end
+
+    return key, false
+end
 
 function _M.delete(self, key)
     self.hasht[key] = nil
@@ -260,7 +286,7 @@ function _M.set(self, key, value, ttl, flags)
     queue_remove(node)
     queue_insert_head(self.cache_queue, node)
 
-    if ttl then
+    if ttl and ttl >= 0 then
         node.expire = ngx_now() + ttl
     else
         node.expire = -1
@@ -304,7 +330,6 @@ function _M.get_keys(self, max_count, res)
 
     return res
 end
-
 
 function _M.flush_all(self)
     tb_clear(self.hasht)
