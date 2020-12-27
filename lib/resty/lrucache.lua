@@ -311,6 +311,8 @@ function _M.flush_all(self)
     tb_clear(self.node2key)
     tb_clear(self.key2node)
 
+    self.num_items = 0
+
     local cache_queue = self.cache_queue
     local free_queue = self.free_queue
 
