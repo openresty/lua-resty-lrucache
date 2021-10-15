@@ -1,7 +1,7 @@
 # vim:st=2 sts=2 sw=2 et:
 
 os: linux
-dist: trusty
+dist: bionic
 sudo: false
 
 language: c
@@ -42,4 +42,4 @@ install:
 
 script:
   - make lint
-  - prove -j$JOBS -r t/
+  - prove -j$JOBS -I. -r t/
