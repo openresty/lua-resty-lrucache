@@ -304,14 +304,14 @@ nginx: [alert] failed to load the 'resty.lrucache' module
 You can install this module with the following command to resolve the above problem.
 
 ```bash
-cd lua-resty-core
+cd lua-resty-lrucache
 sudo make install LUA_LIB_DIR=/usr/local/share/lua/5.1
 ```
 
 You can also change the installation directory to any other directory you like with the LUA_LIB_DIR argument.
 
 ```bash
-cd lua-resty-core
+cd lua-resty-lrucache
 sudo make install LUA_LIB_DIR=/opt/nginx/lualib
 ```
 
