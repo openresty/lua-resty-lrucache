@@ -14,6 +14,7 @@ Table of Contents
     * [new](#new)
     * [set](#set)
     * [get](#get)
+    * [ttl](#ttl)
     * [delete](#delete)
     * [count](#count)
     * [capacity](#capacity)
@@ -203,6 +204,22 @@ value if available.
 Starting from `v0.10`, the user flags value associated with the stored item is
 also returned as the third return value. If no user flags were given to an
 item, its default flags will be `0`.
+
+[Back to TOC](#table-of-contents)
+
+ttl
+---
+`syntax: ttl = cache:ttl(key, update_queue?)`
+
+Retrieves the remaining TTL (time-to-live in seconds) of a key. If the key does
+not exist in the cache or has already expired, `nil` will be returned. If the
+key does not have a TTL, `-1` will be returned.
+
+The optional boolean `update_queue` argument specifies if the cache entry will
+be put on top of the internal LRU queue (like when calling [cache:set](#set) or
+[cache:get](#get)) as part of the `cache:ttl` call.
+
+This feature was first introduced in the v0.16 release.
 
 [Back to TOC](#table-of-contents)
 
