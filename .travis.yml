@@ -1,7 +1,7 @@
 # vim: ts=2 sw=2 et:
 
 os: linux
-dist: bionic
+dist: focal
 
 branches:
   only:
@@ -23,7 +23,7 @@ env:
     - TEST_NGINX_SLEEP=0.006
     - TEST_NGINX_RANDOMIZE=1
   matrix:
-    - NGINX_VERSION=1.29.2
+    - NGINX_VERSION=1.29.4
 
 install:
   - export NGX_BUILD_CC=$CC
