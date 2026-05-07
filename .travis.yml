@@ -23,13 +23,13 @@ env:
     - TEST_NGINX_SLEEP=0.006
     - TEST_NGINX_RANDOMIZE=1
   matrix:
-    - NGINX_VERSION=1.29.4
+    - NGINX_VERSION=1.29.8
 
 install:
   - export NGX_BUILD_CC=$CC
   - export PATH=$PWD/work/nginx/sbin:$PWD/nginx-devel-utils:$PATH
   - sudo apt-get install -qq -y axel
-  - cpanm --sudo --notest Test::Nginx > build.log 2>&1 || (cat build.log && exit 1)
+  - cpanm --sudo --notest Test::Nginx IPC::Run Test2::Util > build.log 2>&1 || (cat build.log && exit 1)
   - git clone https://github.com/openresty/openresty.git ../openresty
   - git clone https://github.com/openresty/nginx-devel-utils.git
   - git clone https://github.com/simpl/ngx_devel_kit.git ../ndk-nginx-module
